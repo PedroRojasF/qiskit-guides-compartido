@@ -1,0 +1,27 @@
+[project]
+name = "qiskit-guides-curso"
+version = "0.1.0"
+description = "Curso interactivo en español sobre las guías de IBM Quantum / Qiskit"
+requires-python = ">=3.11"
+dependencies = [
+  "qiskit[all]>=2.5.2",
+  "qiskit-aer~=0.17",
+  "qiskit-ibm-runtime>=0.50",
+  "qiskit-mitigation~=0.1",
+  "qiskit-addon-utils~=0.4.0",
+  "matplotlib",
+  "pylatexenc",
+  "ipython",
+  "samplomatic",
+]
+
+[dependency-groups]
+tools = [
+    "edge-tts",
+    "playwright",
+    "pillow",
+    "marimo>=0.25.1",
+]
+
+[tool.uv]
+package = false

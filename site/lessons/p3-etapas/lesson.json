@@ -1,0 +1,855 @@
+{
+ "id": "p3-etapas",
+ "part": "Parte III · Transpilación",
+ "section": "3.2",
+ "title": "Las seis etapas del transpilador",
+ "summary": "Init, layout, routing, translation, optimization y scheduling: qué pases usa cada etapa y qué efectos tiene sobre el circuito.",
+ "goals": [
+  "distinguir qubits virtuales y físicos, y las estrategias de layout",
+  "explicar por qué el routing es difícil y estocástico",
+  "estimar el costo de traducir SWAP y Toffoli a puertas base"
+ ],
+ "beats": [
+  {
+   "id": "init",
+   "tag": [
+    "3.2",
+    "Init"
+   ],
+   "say": "La primera etapa hace poco por defecto: valida las instrucciones y traduce las puertas de tres o más qubits a puertas de uno y dos, porque casi todos los algoritmos de layout y routing solo saben trabajar con esas. [[propia]]Es el lugar natural para añadir tus propias optimizaciones iniciales, con plugins o pass managers a medida.",
+   "scene": [
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "init",
+       "s": "puertas de 1 y 2 qubits",
+       "color": "blue"
+      },
+      {
+       "t": "layout",
+       "s": "virtuales → físicos",
+       "color": "teal"
+      },
+      {
+       "t": "routing",
+       "s": "insertar SWAP",
+       "color": "teal"
+      },
+      {
+       "t": "translation",
+       "s": "puertas base",
+       "color": "violet"
+      },
+      {
+       "t": "optimization",
+       "s": "reducir puertas",
+       "color": "gold"
+      },
+      {
+       "t": "scheduling",
+       "s": "tiempos y esperas",
+       "color": "red"
+      }
+     ],
+     "id": "f",
+     "numbered": true
+    },
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 3,
+       "ops": [
+        {
+         "g": "ccx",
+         "q": [
+          0,
+          1,
+          2
+         ]
+        }
+       ],
+       "id": "a"
+      },
+      {
+       "type": "text",
+       "text": "→",
+       "style": "title"
+      },
+      {
+       "type": "circuit",
+       "qubits": 3,
+       "ops": [
+        {
+         "g": "h",
+         "q": [
+          2
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          1,
+          2
+         ]
+        },
+        {
+         "g": "tdg",
+         "q": [
+          2
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          0,
+          2
+         ]
+        },
+        {
+         "g": "t",
+         "q": [
+          2
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          1,
+          2
+         ]
+        },
+        {
+         "g": "box",
+         "q": [
+          0,
+          1,
+          2
+         ],
+         "label": "…"
+        }
+       ],
+       "id": "b"
+      }
+     ],
+     "gap": 20
+    }
+   ],
+   "actions": [
+    {
+     "do": "step",
+     "i": 0,
+     "id": "f"
+    },
+    {
+     "do": "step",
+     "i": 0,
+     "id": "f",
+     "at": "propia"
+    }
+   ]
+  },
+  {
+   "id": "virtual",
+   "tag": [
+    "3.2",
+    "Layout: virtuales y físicos"
+   ],
+   "say": "Los qubits de tu circuito son virtuales: entidades abstractas. Para ejecutar, cada uno debe asignarse a un qubit físico del chip, uno a uno. Esa asignación es el layout. [[bien]]Elegirla bien es crucial: un buen layout evita SWAP y usa los qubits mejor calibrados. [[ej]]Si tu circuito tiene un qubit central que interactúa con otros tres, conviene ponerlo en el físico uno, que tiene tres vecinos.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 4,
+       "ops": [
+        {
+         "g": "cx",
+         "q": [
+          0,
+          1
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          0,
+          2
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          0,
+          3
+         ]
+        }
+       ],
+       "qlabels": [
+        "a",
+        "b",
+        "c",
+        "d"
+       ],
+       "id": "q"
+      },
+      {
+       "type": "graph",
+       "nodes": [
+        [
+         0,
+         0
+        ],
+        [
+         1,
+         0
+        ],
+        [
+         2,
+         0
+        ],
+        [
+         1,
+         1
+        ],
+        [
+         1,
+         2
+        ]
+       ],
+       "edges": [
+        [
+         0,
+         1
+        ],
+        [
+         1,
+         2
+        ],
+        [
+         1,
+         3
+        ],
+        [
+         3,
+         4
+        ]
+       ],
+       "unit": 110,
+       "r": 24,
+       "id": "g",
+       "numbers": false
+      }
+     ],
+     "gap": 50
+    },
+    {
+     "type": "text",
+     "text": "cada qubit virtual → un qubit físico",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "n"
+    },
+    {
+     "do": "nodelabel",
+     "labels": {
+      "1": "a",
+      "0": "b",
+      "2": "c",
+      "3": "d"
+     },
+     "id": "g",
+     "at": "ej"
+    },
+    {
+     "do": "hlnode",
+     "i": 1,
+     "color": "gold",
+     "id": "g",
+     "at": "ej"
+    },
+    {
+     "do": "hlnode",
+     "i": [
+      0,
+      2,
+      3
+     ],
+     "color": "teal",
+     "id": "g",
+     "at": "ej",
+     "t": 0.6
+    }
+   ]
+  },
+  {
+   "id": "layouts",
+   "tag": [
+    "3.2",
+    "Estrategias de layout"
+   ],
+   "say": "Los pass managers prediseñados prueban varias estrategias. Primero buscan un layout perfecto, que no necesite ningún SWAP. [[triv]]TrivialLayout asigna el virtual i al físico i. Es el comportamiento histórico, y solo se usa en el nivel uno como primer intento. [[vf2]]VF2Layout trata el problema como un isomorfismo de subgrafos, con el algoritmo VF2 más más; si hay varias soluciones, elige la de menor error medio. [[heur]]Si no hay layout perfecto, entra la heurística. [[dense]]DenseLayout busca el subgrafo más conectado, y se usa en el nivel uno si hay control de flujo. [[sabre]]SabreLayout parte de un layout aleatorio y repite el algoritmo SabreSwap para mejorarlo.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Pase",
+      "Idea",
+      "Cuándo"
+     ],
+     "rows": [
+      [
+       "`TrivialLayout`",
+       "virtual $i$ → físico $i$",
+       "primer intento del nivel 1"
+      ],
+      [
+       "`VF2Layout`",
+       "isomorfismo de subgrafos (sin SWAP)",
+       "busca layout perfecto"
+      ],
+      [
+       "`DenseLayout`",
+       "subgrafo más conectado",
+       "nivel 1 con control de flujo"
+      ],
+      [
+       "`SabreLayout`",
+       "aleatorio + iterar SabreSwap",
+       "si no hay layout perfecto"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "triv"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "vf2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "dense"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "sabre"
+    }
+   ]
+  },
+  {
+   "id": "routing",
+   "tag": [
+    "3.2",
+    "Routing"
+   ],
+   "say": "Si dos qubits que deben interactuar no son vecinos, hay que mover sus estados con puertas SWAP hasta que lo sean. Cada SWAP es caro y ruidoso. [[np]]Encontrar el mínimo número de SWAP es un problema NP difícil: imposible de resolver exactamente salvo en casos pequeños. [[sabre]]Qiskit usa SabreSwap, una heurística estocástica: da buenas soluciones, no necesariamente óptimas, y puede dar resultados distintos en cada ejecución. Por eso mucha gente transpila varias veces y se queda con el mejor. [[juntos]]Por eficiencia, layout y routing se calculan juntos por defecto, aunque son lógicamente distintos.",
+   "scene": [
+    {
+     "type": "graph",
+     "nodes": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "edges": [
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       3
+      ],
+      [
+       3,
+       4
+      ]
+     ],
+     "unit": 110,
+     "r": 24,
+     "id": "g"
+    },
+    {
+     "type": "box",
+     "kind": "idea",
+     "title": "Mover estados",
+     "body": [
+      {
+       "type": "text",
+       "text": "CX entre 0 y 4: SWAP(4,3) y luego SWAP(3,1) llevan el estado de 4 al qubit 1, vecino de 0",
+       "style": "body"
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    },
+    {
+     "type": "text",
+     "text": "NP difícil · SabreSwap es estocástico: transpila varias veces y quédate con el mejor",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hlnode",
+     "i": [
+      0,
+      4
+     ],
+     "color": "red",
+     "id": "g"
+    },
+    {
+     "do": "hledge",
+     "edges": [
+      [
+       3,
+       4
+      ]
+     ],
+     "color": "gold",
+     "id": "g",
+     "t": 2
+    },
+    {
+     "do": "hledge",
+     "edges": [
+      [
+       1,
+       3
+      ]
+     ],
+     "color": "gold",
+     "id": "g",
+     "t": 3.5
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "np"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "sabre"
+    }
+   ]
+  },
+  {
+   "id": "translation",
+   "tag": [
+    "3.2",
+    "Translation"
+   ],
+   "say": "Escribes con las puertas que quieras, pero el chip solo sabe hacer unas pocas: su conjunto de puertas base. Esta etapa traduce todo a ellas, lo que casi siempre alarga el circuito. [[swap]]Dos casos ilustran el costo. Un SWAP, si no es nativo, cuesta tres CNOT. [[ccx]]Y una Toffoli, de tres qubits, cuesta seis CNOT y varias puertas de un qubit. [[moral]]La moraleja: un algoritmo con muchas Toffoli termina en un circuito profundo, muy afectado por el ruido.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "swap",
+         "q": [
+          0,
+          1
+         ]
+        }
+       ],
+       "id": "a"
+      },
+      {
+       "type": "text",
+       "text": "=",
+       "style": "title"
+      },
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "cx",
+         "q": [
+          0,
+          1
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          1,
+          0
+         ]
+        },
+        {
+         "g": "cx",
+         "q": [
+          0,
+          1
+         ]
+        }
+       ],
+       "id": "b"
+      }
+     ],
+     "gap": 22
+    },
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(3)\nqc.ccx(0, 1, 2)\nprint(qc.decompose().count_ops())",
+     "lang": "python",
+     "id": "c",
+     "hidden": true
+    },
+    {
+     "type": "code",
+     "src": "OrderedDict({'cx': 6, 't': 4, 'tdg': 3, 'h': 2})",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "c",
+     "at": "ccx"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "ccx",
+     "t": 1.5
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "3.2",
+    "Comprueba"
+   ],
+   "say": "Calcula un costo.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "El routing insertó 4 SWAP en tu circuito, y el chip no tiene SWAP nativo.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "numeric",
+    "prompt": "¿Cuántas puertas de dos qubits añaden esos SWAP?",
+    "answer": 12,
+    "why": "Correcto: cada SWAP son 3 CNOT, así que 12. Por eso minimizar SWAP es una de las metas principales.",
+    "tol": 0.001
+   },
+   "align": "top"
+  },
+  {
+   "id": "optimization",
+   "tag": [
+    "3.2",
+    "Optimization"
+   ],
+   "say": "La etapa de optimización pelea contra la profundidad que añadieron el layout, el routing y la traducción, combinando o eliminando puertas. A veces el circuito final es incluso más corto que el original. [[n1]]En el nivel uno, combina cadenas de puertas de un qubit y cancela puertas inversas seguidas. [[n2]]En el nivel dos, usa la conmutación para eliminar más puertas. [[n3]]Y en el nivel tres, agrupa bloques de dos qubits, calcula su unitaria y la vuelve a sintetizar, además de todo lo anterior. [[fin]]Al final comprueba que todo esté en las puertas base.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Nivel",
+      "Pases de optimización"
+     ],
+     "rows": [
+      [
+       "1",
+       "`Optimize1qGatesDecomposition` · cancelación de inversas"
+      ],
+      [
+       "2",
+       "`CommutativeCancellation`"
+      ],
+      [
+       "3",
+       "`Collect2qBlocks` · `ConsolidateBlocks` · `UnitarySynthesis` + los anteriores"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 25
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "n1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "n2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "n3"
+    }
+   ]
+  },
+  {
+   "id": "ejemplo",
+   "tag": [
+    "3.2",
+    "Los niveles en acción"
+   ],
+   "say": "Un ejemplo con números reales: un estado GHZ de quince qubits, con la CNOT siempre desde el qubit cero, sobre un chip donde los qubits están en línea. El qubit cero tiene que interactuar con todos, así que el routing sufre. [[n0]]Con el nivel cero salen sesenta y dos CNOT; [[n1]]con el uno, cincuenta; [[n23]]y con los niveles dos y tres, veintiséis, menos de la mitad. [[var]]Como el routing es estocástico, estos números cambian con la semilla. Para resultados reproducibles, fija seed transpiler.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.providers.fake_provider import GenericBackendV2\nfrom qiskit.transpiler import CouplingMap, generate_preset_pass_manager\n\nbackend = GenericBackendV2(15, coupling_map=CouplingMap.from_line(15), seed=1)\nghz = QuantumCircuit(15)\nghz.h(0)\nghz.cx(0, range(1, 15))\nfor level in range(4):\n    pm = generate_preset_pass_manager(level, backend=backend, seed_transpiler=1234)\n    print(level, pm.run(ghz).count_ops()[\"cx\"])",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    },
+    {
+     "type": "hist",
+     "data": [
+      [
+       "nivel 0",
+       62
+      ],
+      [
+       "nivel 1",
+       50
+      ],
+      [
+       "nivel 2",
+       26
+      ],
+      [
+       "nivel 3",
+       26
+      ]
+     ],
+     "id": "h",
+     "h": 170,
+     "color": "teal",
+     "hidden": true,
+     "ylabel": "CNOT"
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "h",
+     "at": "n0"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      9
+     ],
+     "id": "c",
+     "at": "var"
+    }
+   ]
+  },
+  {
+   "id": "scheduling",
+   "tag": [
+    "3.2",
+    "Scheduling"
+   ],
+   "say": "La última etapa solo se ejecuta si la pides, con scheduling method: as soon as possible o as late as possible, abreviados asap y alap. [[delays]]Contabiliza los tiempos muertos: inserta instrucciones Delay donde un qubit espera sin hacer nada. Así se sabe cuánto durará el circuito en el backend. [[dos]]Funciona en dos partes: un pase de análisis, que anota cuándo empieza cada instrucción, y un pase de relleno, que inserta los retrasos o, en lugar de esperas vacías, secuencias de desacoplamiento dinámico.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "ghz = QuantumCircuit(5)\nghz.h(0)\nghz.cx(0, range(1, 5))\npm = generate_preset_pass_manager(\n    optimization_level=3, backend=GenericBackendV2(5, seed=1),\n    scheduling_method=\"asap\", seed_transpiler=1234)\nprint(pm.run(ghz).count_ops())",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "OrderedDict({'delay': 7, 'cx': 4, 'rz': 2, 'sx': 1})",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    },
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "Análisis",
+       "s": "`ALAPScheduleAnalysis`"
+      },
+      {
+       "t": "Relleno",
+       "s": "`PadDelay` o `PadDynamicalDecoupling`"
+      }
+     ],
+     "id": "f",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "o",
+     "at": "delays"
+    },
+    {
+     "do": "show",
+     "id": "f",
+     "at": "dos"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "3.2",
+    "Comprueba"
+   ],
+   "say": "Una pregunta conceptual.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Transpilas el mismo circuito dos veces, sin fijar semilla, y obtienes profundidades distintas.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Por qué?",
+    "options": [
+     "es un error de Qiskit",
+     "el routing (Sabre) es estocástico",
+     "la traducción a puertas base es aleatoria"
+    ],
+    "right": 1,
+    "why": "Correcto: SabreLayout y SabreSwap usan aleatoriedad. Fija `seed_transpiler` para reproducir, o transpila varias veces y elige el mejor.",
+    "wrong": [
+     "Es el comportamiento esperado.",
+     null,
+     "La traducción es determinista; la aleatoriedad viene del layout y el routing."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "3.2",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Init prepara y layout elige qubits físicos. [[r2]]Routing inserta SWAP con una heurística estocástica. [[r3]]Translation baja a puertas base y optimization recupera lo perdido, más cuanto mayor el nivel. [[r4]]Y scheduling, si lo pides, añade los tiempos de espera.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "init: puertas de ≥3 qubits → 1 y 2 · layout: TrivialLayout, VF2Layout, DenseLayout, SabreLayout",
+      "routing: SabreSwap, estocástico (SWAP = 3 CX)",
+      "translation: a puertas base (CCX → 6 CX) · optimization: depende del nivel",
+      "scheduling: solo si lo pides (`asap`, `alap`) · añade `Delay`"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "transpiler-stages"
+ ],
+ "practice": [
+  "Repite el GHZ de 15 qubits en línea con 100 semillas distintas en el nivel 1 y grafica el histograma de `depth()`.",
+  "Usa `plot_circuit_layout(isa, backend)` para ver qué qubits físicos eligió el layout.",
+  "Guías originales: [transpiler-stages](https://quantum.cloud.ibm.com/docs/en/guides/transpiler-stages)"
+ ],
+ "next": "p3-niveles",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

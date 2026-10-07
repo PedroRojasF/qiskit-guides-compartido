@@ -1,0 +1,602 @@
+{
+ "id": "p2-control-clasico",
+ "part": "Parte II · Circuitos y operadores",
+ "section": "2.7",
+ "title": "Control clásico, feedforward y stretch",
+ "summary": "Circuitos dinámicos: if, switch, for y while dentro del circuito, expresiones clásicas, store y tiempos relativos con stretch.",
+ "goals": [
+  "usar `if_test`, `switch`, `for_loop` y `while_loop`",
+  "construir expresiones clásicas con `expr` y guardarlas con `store`",
+  "usar `stretch` para alinear operaciones y hacer desacoplamiento dinámico"
+ ],
+ "beats": [
+  {
+   "id": "intro",
+   "tag": [
+    "2.7",
+    "Circuitos dinámicos"
+   ],
+   "say": "Hasta ahora los circuitos eran fijos: puertas y, al final, mediciones. Los circuitos dinámicos miden qubits a mitad de la ejecución y, según el resultado, deciden qué hacer después, dentro del propio circuito. A eso se le llama feedforward clásico. [[usos]]Ya se conocen usos concretos: preparar estados como GHZ o W con circuitos poco profundos, entrelazar qubits lejanos en el mismo chip, o muestrear circuitos tipo IQP. [[cuatro]]Qiskit ofrece cuatro construcciones, cada una como un método del circuito que se usa con la palabra with.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Circuitos dinámicos",
+     "style": "title"
+    },
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "medir",
+       "s": "a mitad del circuito"
+      },
+      {
+       "t": "decidir",
+       "s": "lógica clásica"
+      },
+      {
+       "t": "actuar",
+       "s": "más puertas"
+      }
+     ],
+     "id": "f"
+    },
+    {
+     "type": "table",
+     "head": [
+      "Construcción",
+      "Método"
+     ],
+     "rows": [
+      [
+       "if / else",
+       "`if_test`"
+      ],
+      [
+       "switch",
+       "`switch`"
+      ],
+      [
+       "for",
+       "`for_loop`"
+      ],
+      [
+       "while",
+       "`while_loop`"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 25
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "cuatro"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "cuatro",
+     "t": 0.5
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "cuatro",
+     "t": 1
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "cuatro",
+     "t": 1.5
+    }
+   ]
+  },
+  {
+   "id": "if",
+   "tag": [
+    "2.7",
+    "if"
+   ],
+   "say": "Primer ejemplo: una Hadamard y una medición; sale cero o uno al azar. [[if]]Si salió uno, aplicamos una X, que devuelve el qubit a cero. [[med]]Medimos otra vez. [[res]]El resultado final es cero con probabilidad uno: corregimos el azar con feedforward. [[aer]]Para simular circuitos dinámicos usamos el Sampler de Qiskit Aer.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister\nfrom qiskit_aer.primitives import SamplerV2\n\nqubits = QuantumRegister(1, \"q\")\nclbits = ClassicalRegister(1, \"c\")\ncircuit = QuantumCircuit(qubits, clbits)\n(q0,), (c0,) = qubits, clbits\n\ncircuit.h(q0)\ncircuit.measure(q0, c0)\nwith circuit.if_test((c0, 1)):\n    circuit.x(q0)\ncircuit.measure(q0, c0)\n\nprint(SamplerV2().run([circuit]).result()[0].data.c.get_counts())",
+     "lang": "python",
+     "id": "c",
+     "size": 21
+    },
+    {
+     "type": "code",
+     "src": "{'0': 1024}",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "11-12",
+     "id": "c",
+     "at": "if"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      13
+     ],
+     "id": "c",
+     "at": "med"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      2,
+      15
+     ],
+     "id": "c",
+     "at": "aer"
+    }
+   ]
+  },
+  {
+   "id": "else",
+   "tag": [
+    "2.7",
+    "else y condiciones sobre registros"
+   ],
+   "say": "El with de if test puede guardar un objeto, else, que abre el bloque contrario. [[ej]]Si el qubit cero midió uno, Hadamard al qubit uno; si no, una X. [[reg]]También se puede condicionar sobre un registro completo. Aquí, si los bits valen cero cero uno en binario, se aplica una X al tercer qubit. [[circ]]En el dibujo de Qiskit, la condición aparece como círculos sobre los bits clásicos: lleno para uno, vacío para cero.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "with circuit.if_test((c0, 1)) as else_:\n    circuit.h(q1)\nwith else_:\n    circuit.x(q1)\n\nwith circuit.if_test((clbits, 0b001)):\n    circuit.x(q2)",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "measure",
+       "q": [
+        0
+       ],
+       "c": 0
+      },
+      {
+       "g": "if",
+       "q": [
+        1
+       ],
+       "label": "c₀ = 1 ? H : X",
+       "inner": "H",
+       "innerColor": "red"
+      }
+     ],
+     "clbits": 1,
+     "id": "q"
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "1-4",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "hl",
+     "range": "6-7",
+     "id": "c",
+     "at": "reg"
+    }
+   ]
+  },
+  {
+   "id": "switch",
+   "tag": [
+    "2.7",
+    "switch"
+   ],
+   "say": "switch elige entre varios casos según el valor de un bit o de un registro. [[cases]]Cada caso se abre con case; un caso puede cubrir varios valores, como cero y tres. [[def]]case punto DEFAULT se ejecuta si ningún otro coincide. [[nofall]]Y a diferencia de otros lenguajes, solo se ejecuta un bloque: no hay caída al siguiente caso.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "with circuit.switch(clbits) as case:\n    with case(0b000, 0b011):\n        circuit.z(q2)\n    with case(0b001):\n        circuit.y(q2)\n    with case(case.DEFAULT):\n        circuit.x(q2)",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "2-3",
+     "id": "c",
+     "at": "cases"
+    },
+    {
+     "do": "hl",
+     "range": "6-7",
+     "id": "c",
+     "at": "def"
+    }
+   ]
+  },
+  {
+   "id": "loops",
+   "tag": [
+    "2.7",
+    "for y while"
+   ],
+   "say": "for loop repite operaciones sobre una secuencia de valores. [[for]]Cinco X sobre un qubit: como cinco es impar, termina en uno. [[while]]while loop repite mientras se cumpla una condición. Aquí, Hadamard a dos qubits y medir, y repetir mientras salga uno uno. [[res]]Al final, uno uno no aparece nunca; los otros tres salen con frecuencias parecidas.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "with circuit.for_loop(range(5)) as _:\n    circuit.x(q0)\n\ncircuit.h([q0, q1])\ncircuit.measure([q0, q1], [c0, c1])\nwith circuit.while_loop((clbits, 0b11)):\n    circuit.h([q0, q1])\n    circuit.measure([q0, q1], [c0, c1])",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "hist",
+     "data": [
+      [
+       "00",
+       340
+      ],
+      [
+       "01",
+       330
+      ],
+      [
+       "10",
+       354
+      ],
+      [
+       "11",
+       0
+      ]
+     ],
+     "id": "h",
+     "grow": true,
+     "hidden": true,
+     "h": 220
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "1-2",
+     "id": "c",
+     "at": "for"
+    },
+    {
+     "do": "hl",
+     "range": "4-8",
+     "id": "c",
+     "at": "while"
+    },
+    {
+     "do": "show",
+     "id": "h",
+     "at": "res"
+    },
+    {
+     "do": "grow",
+     "id": "h",
+     "at": "res"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "2.7",
+    "Comprueba"
+   ],
+   "say": "Piensa en el ejemplo del switch.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "circuit.h(q0)\ncircuit.measure(q0, c0)\nwith circuit.switch(c0) as case:\n    with case(0):\n        circuit.x(q0)\n    with case(1):\n        circuit.z(q0)\ncircuit.measure(q0, c0)",
+     "lang": "python",
+     "norun": true
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué resultado da la medición final?",
+    "options": [
+     "siempre 0",
+     "siempre 1",
+     "0 o 1 al azar"
+    ],
+    "right": 1,
+    "why": "Correcto: si midió 0, la X lo lleva a 1; si midió 1, la Z no cambia $|1\\rangle$ (solo le da una fase). Siempre 1.",
+    "wrong": [
+     "Con 0 se aplica X, que lo convierte en 1.",
+     null,
+     "Las dos ramas terminan en $|1\\rangle$."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "expr",
+   "tag": [
+    "2.7",
+    "Expresiones clásicas"
+   ],
+   "say": "El módulo qiskit punto circuit punto classical permite calcular con bits durante la ejecución. [[lift]]expr punto lift convierte un bit en una expresión, [[xor]]y bit xor calcula la paridad de varios bits. [[ghz]]Con esto se prepara un estado GHZ de muchos qubits con un circuito poco profundo: se crean pares de Bell, se miden los qubits que los unen, y cada qubit se corrige con una X si la paridad de las mediciones anteriores es impar. [[store]]store guarda el resultado de una expresión para reutilizarlo: aquí guarda el NOT de un registro entero de una vez, en paralelo, en lugar de negar bit por bit dentro de la expresión.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.circuit.classical import expr\n\nparity = expr.lift(mr[0])\nfor k in [1, 2]:\n    parity = expr.bit_xor(mr[k], parity)\nwith qc.if_test(parity):\n    qc.x(qr[5])\n\nqc.store(temp, expr.bit_not(creg))",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      3
+     ],
+     "id": "c",
+     "at": "lift"
+    },
+    {
+     "do": "hl",
+     "range": "4-5",
+     "id": "c",
+     "at": "xor"
+    },
+    {
+     "do": "hl",
+     "range": "6-7",
+     "id": "c",
+     "at": "ghz"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      9
+     ],
+     "id": "c",
+     "at": "store"
+    }
+   ]
+  },
+  {
+   "id": "stretch",
+   "tag": [
+    "2.7",
+    "stretch: tiempos relativos"
+   ],
+   "say": "En hardware importan los tiempos. Desde Qiskit dos punto cero, los retrasos, delay, pueden tener una duración stretch: relativa en vez de absoluta. Su valor concreto se resuelve al compilar, cuando ya se conoce cuánto dura cada puerta calibrada. [[dd]]Un uso típico: mientras el qubit cero ejecuta un bloque condicional, el qubit uno espera ocioso y acumula errores. Le aplicamos desacoplamiento dinámico: retraso s, X, retraso dos s, X, retraso s. [[bar]]Un par de barreras marca el intervalo, y el compilador elige s para que todo llene exactamente ese tiempo.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "s = circuit.add_stretch(\"s\")\ncircuit.delay(s, q1)\ncircuit.x(q1)\ncircuit.delay(expr.mul(s, 2), q1)\ncircuit.x(q1)\ncircuit.delay(s, q1)\ncircuit.barrier()",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "s"
+      },
+      {
+       "t": "X",
+       "color": "blue"
+      },
+      {
+       "t": "2s"
+      },
+      {
+       "t": "X",
+       "color": "blue"
+      },
+      {
+       "t": "s"
+      }
+     ],
+     "id": "f",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "1-6",
+     "id": "c",
+     "at": "dd"
+    },
+    {
+     "do": "show",
+     "id": "f",
+     "at": "dd",
+     "t": 2
+    },
+    {
+     "do": "hl",
+     "lines": [
+      7
+     ],
+     "id": "c",
+     "at": "bar"
+    }
+   ]
+  },
+  {
+   "id": "resto",
+   "tag": [
+    "2.7",
+    "Cómo se resuelve un stretch"
+   ],
+   "say": "Un ejemplo numérico. El qubit cero espera cien unidades de tiempo; en el uno hay tres retrasos a y tres X de ocho unidades cada una. [[ec]]La ecuación es tres a más veinticuatro igual a cien: a vale veinticinco, con un resto de uno. [[resto]]En el servicio de IBM, el resto se suma al primer retraso que usa el stretch: veintiséis, veinticinco, veinticinco. [[lim]]El soporte en hardware es experimental, con límites: un stretch por conjunto de qubits entre barreras, cada stretch en una sola región entre barreras, expresiones de la forma X por stretch más Y, y nunca retrasos negativos.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "3a+3\\cdot 8=100\\ \\Rightarrow\\ a=25,\\ \\text{resto }1",
+     "size": 42
+    },
+    {
+     "type": "math",
+     "tex": "\\text{retrasos: }\\gold{26},\\ 25,\\ 25",
+     "id": "m",
+     "hidden": true,
+     "size": 40
+    },
+    {
+     "type": "box",
+     "kind": "warn",
+     "title": "Límites en IBM Quantum (experimental)",
+     "body": [
+      {
+       "type": "list",
+       "items": [
+        "un stretch por conjunto de qubits entre barreras",
+        "cada stretch en una sola región entre barreras",
+        "solo $X\\cdot\\text{stretch}+Y$ · nunca negativo"
+       ],
+       "size": 25
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "m",
+     "at": "resto"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "lim"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "2.7",
+    "Comprueba"
+   ],
+   "say": "Resuelve un stretch.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "\\text{qubit 0: delay}(60)\\qquad\\text{qubit 1: } a,\\ X,\\ a,\\ X,\\ a,\\ X,\\ a",
+     "size": 36
+    },
+    {
+     "type": "text",
+     "text": "cada X dura 8 unidades",
+     "style": "note"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "numeric",
+    "prompt": "¿Cuánto vale $a$ (sin contar el resto)?",
+    "answer": 9,
+    "why": "Correcto: $4a+24=60$, así que $a=9$ y no hay resto.",
+    "tol": 0.001,
+    "hint": "Cuenta cuántas veces aparece $a$ y cuántas X hay."
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "2.7",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Un circuito dinámico mide a mitad de camino y decide. [[r2]]if test, switch, for loop y while loop, siempre con with. [[r3]]Las expresiones clásicas calculan paridades y store las guarda. [[r4]]Y stretch deja que el compilador fije los tiempos. En la Parte siete veremos qué de esto se puede ejecutar en el hardware de IBM.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "medir a mitad del circuito y decidir: **feedforward**",
+      "`if_test` (+ `else_`) · `switch` (+ `case.DEFAULT`) · `for_loop` · `while_loop`",
+      "`qiskit.circuit.classical.expr`: XOR, NOT… · `store` guarda resultados",
+      "`stretch`: duraciones relativas que se resuelven al compilar"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "classical-feedforward-and-control-flow",
+  "stretch"
+ ],
+ "practice": [
+  "Ejecuta el ejemplo `while_loop` con `qiskit_aer.primitives.SamplerV2` y verifica que `11` nunca aparece.",
+  "Construye el GHZ de 8 qubits con paridades de la guía original y compara su profundidad con el GHZ en cadena de CNOT.",
+  "Guías originales: [classical-feedforward-and-control-flow](https://quantum.cloud.ibm.com/docs/en/guides/classical-feedforward-and-control-flow) · [stretch](https://quantum.cloud.ibm.com/docs/en/guides/stretch)"
+ ],
+ "next": "p2-qasm",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

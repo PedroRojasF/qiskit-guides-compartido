@@ -1,0 +1,434 @@
+{
+ "id": "p7-dinamicos",
+ "part": "Parte VII · Ejecución avanzada y gestión de trabajos",
+ "section": "7.1",
+ "title": "Circuitos dinámicos en hardware",
+ "summary": "Qué parte del control de flujo admite el hardware de IBM, la medición a mitad de circuito, store, sus límites y cómo estimar valores esperados.",
+ "goals": [
+  "saber qué construcciones dinámicas se ejecutan en los QPUs de IBM",
+  "usar `MidCircuitMeasure` para mediciones intermedias",
+  "respetar los límites de difusión, operandos y anidamiento"
+ ],
+ "beats": [
+  {
+   "id": "intro",
+   "tag": [
+    "7.1",
+    "Lo que el hardware admite"
+   ],
+   "say": "En la Parte dos construiste circuitos dinámicos con if, switch, for y while. En el hardware de IBM, por ahora, solo se ejecuta la instrucción if, con su else. [[trade]]Y hay un costo: medir a mitad del circuito y procesar la lógica clásica suele tardar más que una puerta de dos qubits. Ese tiempo extra puede anular la ventaja de un circuito menos profundo. [[filtrar]]Para ver qué procesadores admiten circuitos dinámicos, filtra con dynamic circuits igual a True.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Construcción",
+      "En QPUs de IBM"
+     ],
+     "rows": [
+      [
+       "`if_test` / `else`",
+       "✅"
+      ],
+      [
+       "`switch`",
+       "❌"
+      ],
+      [
+       "`for_loop`",
+       "❌"
+      ],
+      [
+       "`while_loop`",
+       "❌"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 26
+    },
+    {
+     "type": "code",
+     "src": "service.backends(dynamic_circuits=True)",
+     "lang": "python",
+     "id": "c",
+     "hidden": true,
+     "norun": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "trade"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "trade",
+     "t": 1
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "trade",
+     "t": 2
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "filtrar"
+    }
+   ]
+  },
+  {
+   "id": "mid",
+   "tag": [
+    "7.1",
+    "Medir a mitad del circuito"
+   ],
+   "say": "Antes había una sola instrucción de medición. Pero una medición intermedia tiene otras necesidades que una final: por ejemplo, su duración importa mucho, porque mientras dura, los demás qubits esperan. [[mcm]]Desde la versión cero punto cuarenta y tres del cliente existe MidCircuitMeasure, optimizada para medir a mitad del circuito. Se añade con append. [[m2]]Corresponde a la instrucción measure dos del backend, que no todos los procesadores tienen: búscala en supported instructions. [[reglas]]Recuerda: hace falta al menos un registro clásico, y Estimator ignora las mediciones.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit_ibm_runtime.circuit import MidCircuitMeasure\n\ncirc = QuantumCircuit(2, 2)\ncirc.x(0)\ncirc.append(MidCircuitMeasure(), [0], [0])\nprint(circ.count_ops())",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "OrderedDict({'x': 1, 'measure_2': 1})",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      6
+     ],
+     "id": "c",
+     "at": "mcm"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "m2"
+    }
+   ]
+  },
+  {
+   "id": "store",
+   "tag": [
+    "7.1",
+    "store en hardware"
+   ],
+   "say": "Desde la cero punto cuarenta y siete puedes usar store en hardware, para guardar una expresión clásica que reutilizas. [[ojo]]Un detalle importante: el valor guardado solo vive en la memoria durante la ejecución. No se copia al resultado. Si guardas un registro en temp, el if funciona como esperas, pero al terminar, temp aparece en cero en los datos que recibes.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "qc.store(temp, creg)\nwith qc.if_test((temp, 0b001)):   # funciona durante la ejecución\n    ...\njob.result()[0].data.temp         # ¡vale 0!: no se devuelve",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "box",
+     "kind": "warn",
+     "title": "store no se devuelve",
+     "body": [
+      {
+       "type": "text",
+       "text": "el registro guardado solo existe durante la ejecución",
+       "style": "body"
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "b",
+     "at": "ojo"
+    }
+   ]
+  },
+  {
+   "id": "difusion",
+   "tag": [
+    "7.1",
+    "Límite de difusiones"
+   ],
+   "say": "La electrónica de control tiene poca memoria, así que hay un límite de instrucciones if. Lo que cuenta son las difusiones: cada vez que datos de medición nuevos se envían a la lógica de control para evaluar una condición. [[ej]]Dos if sobre el mismo registro c cero, sin medir en medio, son una sola difusión. Un if sobre un bit de c uno es otra. En total, cuatro bits difundidos. [[cifras]]Como referencia: difundiendo sesenta bits cada vez caben unas trescientas difusiones por trabajo; difundiendo un solo bit, unas dos mil cuatrocientas.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "c0 = ClassicalRegister(3)\nc1 = ClassicalRegister(5)\nwith circuit.if_test((c0, 1)): ...     # difusión 1: 3 bits\nwith circuit.if_test((c0, 3)): ...     # misma difusión (c0 no cambió)\nwith circuit.if_test((c1[2], 1)): ...  # difusión 2: 1 bit",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "table",
+     "head": [
+      "bits por difusión",
+      "difusiones por trabajo"
+     ],
+     "rows": [
+      [
+       "60",
+       "≈ 300"
+      ],
+      [
+       "1",
+       "≈ 2400"
+      ]
+     ],
+     "id": "t",
+     "hidden": true,
+     "size": 26
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "3-5",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "t",
+     "at": "cifras"
+    }
+   ]
+  },
+  {
+   "id": "limites",
+   "tag": [
+    "7.1",
+    "Otros límites"
+   ],
+   "say": "Más restricciones. [[bits]]El operando de un if puede tener como máximo treinta y dos bits: no puedes comparar un registro de cincuenta bits completo, pero sí un solo bit de él. [[anidar]]No se permiten if anidados. [[dentro]]No se admiten resets ni mediciones dentro de un if. [[arit]]Ni operaciones aritméticas. [[qasm]]Y si envías OpenQASM tres, solo valen instrucciones que Qiskit pueda cargar.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Restricción",
+      "Ejemplo"
+     ],
+     "rows": [
+      [
+       "operando ≤ 32 bits",
+       "`if_test((cr, 15))` con `cr` de 50 bits ❌ · `if_test((cr[5], 1))` ✅"
+      ],
+      [
+       "sin anidar",
+       "`if` dentro de `if` ❌"
+      ],
+      [
+       "sin reset ni medición dentro",
+       "`with if_test(...): qc.measure(...)` ❌"
+      ],
+      [
+       "sin aritmética",
+       "sumar registros ❌"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "bits"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "anidar"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "dentro"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "arit"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "7.1",
+    "Comprueba"
+   ],
+   "say": "¿Se ejecuta en el hardware?",
+   "scene": [
+    {
+     "type": "code",
+     "src": "cr = ClassicalRegister(2)\n...\nwith circuit.if_test((cr, 0b11)):\n    circuit.x(q2)",
+     "lang": "python",
+     "norun": true
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Es válido en un QPU de IBM?",
+    "options": [
+     "sí: un solo `if` sobre un registro de 2 bits",
+     "no: los registros completos no se pueden comparar",
+     "no: falta un `else`"
+    ],
+    "right": 0,
+    "why": "Correcto: es la forma válida de expresar «si los dos bits valen 1» sin anidar dos `if`.",
+    "wrong": [
+     null,
+     "Sí se puede, mientras el registro tenga ≤ 32 bits.",
+     "El `else` es opcional."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "estimator",
+   "tag": [
+    "7.1",
+    "Valores esperados con circuitos dinámicos"
+   ],
+   "say": "Estimator no admite circuitos dinámicos. Para obtener valores esperados, usa Sampler y haz tú el trabajo de Estimator. [[agrupar]]Primero, agrupa los términos de los observables en conjuntos que conmutan qubit a qubit, por ejemplo con PauliList punto group qubit wise commuting. [[bases]]Segundo, ejecuta un circuito de cambio de base por grupo. [[sumar]]Tercero, calcula los valores esperados de cada grupo, con BitArray punto expectation values, y súmalos.",
+   "scene": [
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "agrupar observables",
+       "s": "`group_qubit_wise_commuting`"
+      },
+      {
+       "t": "cambio de base",
+       "s": "un circuito por grupo"
+      },
+      {
+       "t": "Sampler"
+      },
+      {
+       "t": "sumar",
+       "s": "`BitArray.expectation_values`"
+      }
+     ],
+     "id": "f",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "f",
+     "at": "agrupar"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "f",
+     "at": "bases"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "f",
+     "at": "bases",
+     "t": 1.5
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "f",
+     "at": "sumar"
+    }
+   ]
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "7.1",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]En hardware de IBM, solo if y else. [[r2]]MidCircuitMeasure mide a mitad de circuito con menos sobrecarga. [[r3]]Hay límites de difusiones, de bits por operando y de anidamiento. [[r4]]Y para valores esperados con circuitos dinámicos, Sampler más tu propio posprocesamiento.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "en hardware de IBM solo `if` (con `else`): no `for`, `while` ni `switch`",
+      "`MidCircuitMeasure` (`measure_2`) para medir a mitad de circuito",
+      "límites: ≤ 32 bits por operando, sin anidar, sin reset ni medición dentro del `if`",
+      "con Estimator no: usa Sampler y calcula los valores esperados tú"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "execute-dynamic-circuits"
+ ],
+ "practice": [
+  "Reescribe con un único `if` y un registro de 2 bits un circuito que tenga dos `if` anidados.",
+  "Ejecuta en un QPU el ejemplo de corrección `H · medir · if (c=1) X · medir` y comprueba que sale `0` casi siempre.",
+  "Guías originales: [execute-dynamic-circuits](https://quantum.cloud.ibm.com/docs/en/guides/execute-dynamic-circuits)"
+ ],
+ "next": "p7-fraccionales",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

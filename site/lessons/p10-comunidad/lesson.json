@@ -1,0 +1,438 @@
+{
+ "id": "p10-comunidad",
+ "part": "Parte X · Organizaciones, seguridad y comunidad",
+ "section": "10.4",
+ "title": "Soporte, preguntas frecuentes y código abierto",
+ "summary": "Dónde pedir ayuda, las preguntas frecuentes, cómo citar Qiskit y los QPUs, y cómo participar en la comunidad de código abierto.",
+ "goals": [
+  "saber dónde pedir ayuda según tu plan",
+  "citar Qiskit y los QPUs de IBM",
+  "participar en la comunidad respetando su código de conducta"
+ ],
+ "beats": [
+  {
+   "id": "soporte",
+   "tag": [
+    "10.4",
+    "Pedir ayuda"
+   ],
+   "say": "Con cualquier plan, salvo las cuentas de prueba, las consultas van al centro de soporte de IBM Cloud, abriendo un caso sobre Quantum Compute: errores de trabajos, problemas de la plataforma, dudas de Qiskit o de computación cuántica. [[comunidad]]Para ayuda de la comunidad: el Slack de Qiskit, con canales temáticos, y Stack Exchange de computación cuántica. [[github]]Y para reportar errores o pedir funciones, los issues de GitHub de cada repositorio: el SDK, el cliente, Serverless o el transpilador con IA.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Necesidad",
+      "Dónde"
+     ],
+     "rows": [
+      [
+       "soporte técnico (planes)",
+       "IBM Cloud Support Center"
+      ],
+      [
+       "ayuda de la comunidad",
+       "Slack de Qiskit · Stack Exchange"
+      ],
+      [
+       "errores y propuestas",
+       "issues en GitHub"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "comunidad"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "github"
+    }
+   ]
+  },
+  {
+   "id": "cuenta",
+   "tag": [
+    "10.4",
+    "Problemas de cuenta"
+   ],
+   "say": "Si no puedes crear una cuenta, abre un caso de verificación de cuenta. Si tu país no admite cuentas personales, puedes usar la documentación y los cursos sin cuenta, una cuenta académica de SkillsBuild si eres estudiante o docente, o una cuenta de prueba de treinta días. [[inactiva]]Si ves que tu cuenta está inactiva, revisa en IBM Cloud si tienes pasos pendientes. [[invitado]]Y si te invitaron a una cuenta, basta aceptar la invitación, sin dar datos de facturación.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "documentación y cursos sin cuenta",
+      "SkillsBuild (estudiantes y docentes)",
+      "cuenta de prueba: 30 días"
+     ],
+     "id": "l",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "l",
+     "t": 6
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "l",
+     "t": 8
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "l",
+     "t": 10
+    }
+   ]
+  },
+  {
+   "id": "faq",
+   "tag": [
+    "10.4",
+    "Preguntas frecuentes"
+   ],
+   "say": "Algunas preguntas frecuentes. [[tarjeta]]¿Uso el plan Open y puse mi tarjeta: me cobrarán? No, salvo que crees una instancia Pay As You Go y la uses. [[clave]]¿Clave de API o token de API? Son lo mismo. Un token bearer, en cambio, es temporal. [[region]]¿Tengo que elegir mi región? No: la región decide dónde se ejecuta y dónde se guardan los datos; el plan Open solo está en us east. [[proxy]]¿Puedo usar un proxy? Sí, desde la versión cero punto cuarenta y cuatro del cliente. [[aer]]¿Y dónde quedó Aer? Desde Qiskit uno punto cero, pip install qiskit solo instala el SDK: Aer y los demás se instalan aparte.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Pregunta",
+      "Respuesta"
+     ],
+     "rows": [
+      [
+       "¿Open con tarjeta: me cobran?",
+       "no, salvo con una instancia Pay-As-You-Go"
+      ],
+      [
+       "¿clave de API vs token de API?",
+       "lo mismo (bearer: temporal)"
+      ],
+      [
+       "¿debo usar mi región?",
+       "no · Open solo en `us-east`"
+      ],
+      [
+       "¿proxy?",
+       "sí, cliente ≥ 0.44"
+      ],
+      [
+       "¿Aer?",
+       "`pip install qiskit-aer` aparte"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "tarjeta"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "clave"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "region"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "proxy"
+    },
+    {
+     "do": "item",
+     "i": 4,
+     "id": "t",
+     "at": "aer"
+    }
+   ]
+  },
+  {
+   "id": "citar",
+   "tag": [
+    "10.4",
+    "Citar en tu investigación"
+   ],
+   "say": "Si usas Qiskit en un artículo, cítalo con el archivo BibTeX del repositorio. [[agradecer]]Para los equipos de IBM, se recomienda un agradecimiento, y citar IBM Quantum con su dirección y el año. [[qpu]]Los QPUs se citan por su nombre único, opcionalmente con la versión, y conviene mencionar el tipo de procesador.",
+   "scene": [
+    {
+     "type": "box",
+     "kind": "def",
+     "title": "Agradecimiento sugerido",
+     "body": [
+      {
+       "type": "text",
+       "text": "We acknowledge the use of IBM Quantum services for this work. The views expressed are those of the authors, and do not reflect the official policy or position of IBM or the IBM Quantum team.",
+       "style": "body"
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    },
+    {
+     "type": "text",
+     "text": "QPU: «In this paper we used `ibm_fez` (v1.2.8), an IBM Quantum Heron processor.»",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "b",
+     "at": "agradecer"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "qpu"
+    }
+   ]
+  },
+  {
+   "id": "open",
+   "tag": [
+    "10.4",
+    "Código abierto"
+   ],
+   "say": "Desde dos mil dieciséis, IBM Quantum abrió el acceso a computadores cuánticos en la nube y liberó como código abierto partes clave de su software, empezando por Qiskit, hoy el entorno de computación cuántica más usado. [[contribuir]]Puedes contribuir de muchas formas: código mediante pull requests, documentación, o ayudando a otros en Slack. Para aportar código se firma un acuerdo de licencia de contribuidor.",
+   "scene": [
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "2016",
+       "s": "acceso en la nube"
+      },
+      {
+       "t": "Qiskit",
+       "s": "código abierto"
+      },
+      {
+       "t": "ecosistema",
+       "s": "proyectos de la comunidad",
+       "color": "teal"
+      }
+     ],
+     "id": "f",
+     "stagger": true
+    },
+    {
+     "type": "list",
+     "items": [
+      "pull requests",
+      "documentación",
+      "ayuda en Slack"
+     ],
+     "id": "l",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "f"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "f",
+     "t": 4
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "f",
+     "t": 8
+    },
+    {
+     "do": "show",
+     "id": "l",
+     "at": "contribuir"
+    }
+   ]
+  },
+  {
+   "id": "conducta",
+   "tag": [
+    "10.4",
+    "Código de conducta"
+   ],
+   "say": "La comunidad de Qiskit tiene un código de conducta: tratar a todos con respeto y dignidad, sin acoso, sin importar edad, apariencia, discapacidad, etnia, identidad de género, nivel de experiencia, nacionalidad, religión u orientación. Vale en línea y en persona. [[bien]]Se espera lenguaje acogedor e inclusivo, respeto por otros puntos de vista, aceptar la crítica constructiva, empatía, y colaborar antes que confrontar. [[mal]]No se acepta lenguaje o imágenes sexualizadas, insultos, acoso, ni publicar información privada de otros, aunque se diga en broma.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "box",
+       "kind": "idea",
+       "title": "Sí",
+       "body": [
+        {
+         "type": "text",
+         "text": "lenguaje inclusivo · respeto · empatía · colaborar antes que confrontar",
+         "style": "body"
+        }
+       ],
+       "id": "a",
+       "hidden": true
+      },
+      {
+       "type": "box",
+       "kind": "warn",
+       "title": "No",
+       "body": [
+        {
+         "type": "text",
+         "text": "acoso · insultos · información privada ajena · aunque sea «en broma»",
+         "style": "body"
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "a",
+     "at": "bien"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "mal"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "10.4",
+    "Comprueba"
+   ],
+   "say": "¿Dónde pides ayuda?",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Encontraste un error reproducible en el transpilador del SDK de Qiskit.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Dónde lo reportas?",
+    "options": [
+     "en un caso de IBM Cloud Support",
+     "como issue en el GitHub de Qiskit",
+     "en un mensaje privado a un desarrollador"
+    ],
+    "right": 1,
+    "why": "Correcto: los errores del SDK se reportan como issues en github.com/Qiskit/qiskit, donde también se siguen las próximas versiones.",
+    "wrong": [
+     "El soporte de IBM es para tu cuenta y tus trabajos; los errores del SDK van a GitHub.",
+     null,
+     "Mejor en público, donde otros pueden reproducirlo y ayudar."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "10.4",
+    "Fin del curso"
+   ],
+   "say": "Resumen. [[r1]]Soporte en IBM Cloud, comunidad en Slack y Stack Exchange. [[r2]]Errores y propuestas en GitHub. [[r3]]Cita Qiskit y los QPUs que uses. [[r4]]Y participa con respeto. Con esto terminas el recorrido completo por las guías de IBM Quantum y Qiskit. ¡Felicidades! Ahora, a practicar con hardware real.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "soporte: IBM Cloud Support Center (casos) · comunidad: Slack de Qiskit, Stack Exchange",
+      "errores y propuestas: issues en GitHub de cada repositorio",
+      "citar Qiskit (BibTeX) y los QPUs por nombre y versión",
+      "código abierto desde 2016 · código de conducta: respeto, inclusión, colaboración"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "support",
+  "faq",
+  "open-source",
+  "code-of-conduct"
+ ],
+ "practice": [
+  "Únete al [Slack de Qiskit](https://qisk.it/join-slack) y busca el canal de tu tema favorito.",
+  "Busca en GitHub un issue de Qiskit con la etiqueta «good first issue».",
+  "Guías originales: [support](https://quantum.cloud.ibm.com/docs/en/guides/support) · [faq](https://quantum.cloud.ibm.com/docs/en/guides/faq) · [open-source](https://quantum.cloud.ibm.com/docs/en/guides/open-source) · [code-of-conduct](https://quantum.cloud.ibm.com/docs/en/guides/code-of-conduct)"
+ ],
+ "next": null,
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

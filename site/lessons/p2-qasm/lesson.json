@@ -1,0 +1,471 @@
+{
+ "id": "p2-qasm",
+ "part": "Parte II · Circuitos y operadores",
+ "section": "2.8",
+ "title": "OpenQASM y guardar circuitos",
+ "summary": "El lenguaje OpenQASM 2 y 3, cómo importar y exportar circuitos, qué funciones admite el hardware, y cómo guardarlos con QPY.",
+ "goals": [
+  "leer un programa OpenQASM 3 sencillo",
+  "importar y exportar circuitos con `qasm2` y `qasm3`",
+  "guardar y cargar circuitos con QPY"
+ ],
+ "beats": [
+  {
+   "id": "que",
+   "tag": [
+    "2.8",
+    "Qué es OpenQASM"
+   ],
+   "say": "[[que]]OpenQASM, el lenguaje ensamblador cuántico abierto, describe circuitos como secuencias ordenadas de operaciones con parámetros, como puertas, mediciones y resets, más cálculo clásico en tiempo real. [[v3]]Su versión más reciente, OpenQASM tres, añadió control de flujo con feedforward, modificadores de puertas y descripciones de pulsos. [[franca]]Su papel principal es ser la lengua franca entre herramientas: puedes construir un circuito con una, transpilar con otra, y pasarlo entre ellas en OpenQASM.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "OPENQASM 3;\ninclude \"stdgates.inc\";\nconst n = 3;           // número de qubits\nqubit[n] q;\nbit[n] c;\nh q[0];\nfor k in [0:n-1] {\n  cnot q[k], q[k+1];\n}\nc = measure q;",
+     "lang": "qasm",
+     "id": "c",
+     "reveal": true,
+     "size": 26
+    }
+   ],
+   "actions": [
+    {
+     "do": "lines",
+     "to": 5,
+     "id": "c",
+     "at": "que"
+    },
+    {
+     "do": "lines",
+     "to": 10,
+     "id": "c",
+     "at": "v3"
+    },
+    {
+     "do": "hl",
+     "range": "7-9",
+     "id": "c",
+     "at": "v3"
+    }
+   ]
+  },
+  {
+   "id": "q2import",
+   "tag": [
+    "2.8",
+    "Importar OpenQASM 2"
+   ],
+   "say": "Para importar OpenQASM dos hay dos funciones: load, que lee un archivo, y loads, que recibe el programa como texto. [[ej]]Este programa crea un estado de Bell, y loads lo convierte en un QuantumCircuit. [[lib]]Qiskit trata el archivo qelib1 punto inc como la biblioteca estándar, con exactamente las puertas del artículo original de OpenQASM dos, y las representa con las puertas de su propia biblioteca.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "import qiskit.qasm2\n\nprogram = \"\"\"\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0], q[1];\nmeasure q -> c;\n\"\"\"\ncircuit = qiskit.qasm2.loads(program)\nprint(circuit.count_ops())",
+     "lang": "python",
+     "id": "c",
+     "size": 23
+    },
+    {
+     "type": "code",
+     "src": "OrderedDict({'measure': 2, 'h': 1, 'cx': 1})",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      12
+     ],
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "ej",
+     "t": 1
+    }
+   ]
+  },
+  {
+   "id": "custom",
+   "tag": [
+    "2.8",
+    "Puertas propias al importar"
+   ],
+   "say": "Las puertas definidas en el programa con gate se importan, por defecto, como puertas personalizadas. [[custom]]Puedes decirle al importador qué clase usar con CustomInstruction: el nombre, el número de parámetros, el número de qubits y el constructor. [[builtin]]Con builtin igual a True, la puerta está disponible aunque el programa no la defina: útil con plataformas que tratan sus puertas base como incorporadas. [[legacy]]Hay una trampa histórica: el exportador de Qiskit asume que qelib1 tiene más puertas de las que tiene, como rxx. Para releer esos archivos, pasa LEGACY CUSTOM INSTRUCTIONS. [[clas]]También puedes añadir funciones clásicas propias con CustomClassical, y activar el modo estricto, que sigue la especificación al pie de la letra.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import qasm2\nfrom qiskit.circuit.library import RZXGate\n\ncustoms = [qasm2.CustomInstruction(\"rzx\", 1, 2, RZXGate)]\nqasm2.loads(program, custom_instructions=customs)\n\nqasm2.loads(old_program,\n            custom_instructions=qasm2.LEGACY_CUSTOM_INSTRUCTIONS)\n\nimport math\nqasm2.loads(program,\n            custom_classical=[qasm2.CustomClassical(\"arctan\", 2, math.atan2)],\n            strict=False)",
+     "lang": "python",
+     "id": "c",
+     "norun": true,
+     "size": 23
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "4-5",
+     "id": "c",
+     "at": "custom"
+    },
+    {
+     "do": "hl",
+     "range": "7-8",
+     "id": "c",
+     "at": "legacy"
+    },
+    {
+     "do": "hl",
+     "range": "10-13",
+     "id": "c",
+     "at": "clas"
+    }
+   ]
+  },
+  {
+   "id": "export",
+   "tag": [
+    "2.8",
+    "Exportar"
+   ],
+   "say": "Para exportar, qasm2 punto dumps devuelve el texto y dump lo escribe en un archivo. [[q3]]Lo mismo con qasm3. Fíjate en las diferencias: en OpenQASM tres, los registros se declaran con qubit y bit, y la medición se escribe como una asignación.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit, qasm3\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()\nprint(qasm3.dumps(qc))",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] meas;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];\nbarrier q[0], q[1];\nmeas[0] = measure q[0];\nmeas[1] = measure q[1];",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "o",
+     "at": "q3"
+    }
+   ]
+  },
+  {
+   "id": "q3import",
+   "tag": [
+    "2.8",
+    "Importar OpenQASM 3"
+   ],
+   "say": "Para importar OpenQASM tres hace falta un paquete extra, qiskit qasm3 import. Esta parte aún está en fase exploratoria y puede cambiar. [[fun]]Las funciones son las mismas: load y loads. [[cap]]El importador entiende entradas, alias con let, puertas propias con modificadores como ctrl o inv, bucles while e if.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "$ pip install qiskit-qasm3-import",
+     "lang": "sh",
+     "id": "s"
+    },
+    {
+     "type": "code",
+     "src": "import qiskit.qasm3\n\ncircuit = qiskit.qasm3.loads(\"\"\"\nOPENQASM 3.0;\ninclude \"stdgates.inc\";\nqubit[2] q;\nbit[2] c;\nh q[0];\ncx q[0], q[1];\nc = measure q;\n\"\"\")\nprint(circuit.num_qubits, circuit.num_clbits)",
+     "lang": "python",
+     "id": "c",
+     "hidden": true
+    },
+    {
+     "type": "code",
+     "src": "2 2",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "c",
+     "at": "fun"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "cap"
+    }
+   ]
+  },
+  {
+   "id": "tabla",
+   "tag": [
+    "2.8",
+    "¿Qué funciona dónde?"
+   ],
+   "say": "La tabla de funciones de OpenQASM tres distingue dos cosas: si el SDK puede representarla, y si el servicio de IBM puede ejecutarla en hardware. [[si]]Funciona en ambos: comentarios, bits, barreras, delay, la U incorporada, reset, measure, if y else. [[sdk]]Solo en el SDK: while, else if, box, los modificadores de puertas y gphase. Las puertas propias y los modificadores se resuelven al transpilar al ISA del backend. [[ibm]]Y lo contrario: los tipos int, uint o bool, que el importador aún no lee, sí se ejecutan en hardware si los construyes desde Python. [[anid]]Ojo: el control de flujo anidado, como un if dentro de otro, no se puede ejecutar en hardware.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Función",
+      "SDK",
+      "IBM QPU"
+     ],
+     "rows": [
+      [
+       "comentarios, `bit`, `barrier`, `delay`, `U`, `reset`, `measure`",
+       "✅",
+       "✅"
+      ],
+      [
+       "`if` / `else`",
+       "✅",
+       "✅"
+      ],
+      [
+       "`while`, `else if`, `box`, `ctrl @`, `inv @`, `gphase`",
+       "✅ / 🟡",
+       "❌"
+      ],
+      [
+       "`for`",
+       "🟡",
+       "❌"
+      ],
+      [
+       "`int`, `uint`, `bool`, comparaciones",
+       "🟡 / ❌",
+       "✅"
+      ],
+      [
+       "`stretch`",
+       "🟡",
+       "🟡"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "si"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "si",
+     "t": 1
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "sdk"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "sdk",
+     "t": 1
+    },
+    {
+     "do": "item",
+     "i": 4,
+     "id": "t",
+     "at": "ibm"
+    },
+    {
+     "do": "item",
+     "i": 5,
+     "id": "t",
+     "at": "anid"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "2.8",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre la tabla.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tu circuito tiene un `if` dentro de otro `if`.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Se puede ejecutar en el hardware de IBM?",
+    "options": [
+     "sí, siempre",
+     "no: el control de flujo anidado no es ejecutable",
+     "solo si lo exportas a OpenQASM 2"
+    ],
+    "right": 1,
+    "why": "Correcto: el control de flujo anidado (incluido `else if`) se puede representar en Qiskit, pero no ejecutar en hardware.",
+    "wrong": [
+     "El hardware no admite anidamiento.",
+     null,
+     "OpenQASM 2 ni siquiera tiene bloques `if` con cuerpo."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "qpy",
+   "tag": [
+    "2.8",
+    "Guardar circuitos con QPY"
+   ],
+   "say": "Para guardar un circuito exactamente como es, con todos sus objetos de Qiskit, usa QPY, el formato binario de serialización. [[comp]]Un archivo QPY se podrá leer con versiones más nuevas de Qiskit, aunque no necesariamente con versiones más viejas. [[dump]]qpy punto dump escribe uno o varios circuitos en un archivo abierto en modo binario. [[load]]Y qpy punto load los lee. Siempre devuelve una lista, aunque hayas guardado uno solo.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import qpy\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()\n\nwith open(\"test.qpy\", \"wb\") as file:\n    qpy.dump(qc, file)\n\nwith open(\"test.qpy\", \"rb\") as handle:\n    circuits = qpy.load(handle)\nprint(len(circuits), circuits[0] == qc)",
+     "lang": "python",
+     "id": "c",
+     "size": 23
+    },
+    {
+     "type": "code",
+     "src": "1 True",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "8-9",
+     "id": "c",
+     "at": "dump"
+    },
+    {
+     "do": "hl",
+     "range": "11-13",
+     "id": "c",
+     "at": "load"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "load",
+     "t": 1.5
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "2.8",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre formatos.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Quieres guardar un circuito con parámetros y control de flujo para seguir trabajando mañana con Qiskit.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué formato conserva todo con más fidelidad?",
+    "options": [
+     "OpenQASM 2",
+     "OpenQASM 3",
+     "QPY"
+    ],
+    "right": 2,
+    "why": "Correcto: QPY guarda el objeto de Qiskit completo. OpenQASM es ideal para intercambiar con otras herramientas, pero no todo se ida y vuelve igual.",
+    "wrong": [
+     "OpenQASM 2 no tiene control de flujo con bloques.",
+     "OpenQASM 3 es bueno para intercambiar, pero la importación aún es parcial.",
+     null
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "2.8",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]OpenQASM es la lengua franca entre herramientas. [[r2]]qasm2 importa y exporta, con opciones para puertas propias y archivos antiguos. [[r3]]qasm3 exporta, y para importar necesita un paquete extra. [[r4]]Y para guardar circuitos tal cual, QPY.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "OpenQASM: lenguaje de intercambio entre herramientas · versiones 2 y 3",
+      "`qasm2.loads/load/dumps/dump` · `CustomInstruction`, `LEGACY_CUSTOM_INSTRUCTIONS`, `strict`",
+      "`qasm3.dumps/dump` · importar requiere `qiskit-qasm3-import`",
+      "QPY: `qpy.dump` / `qpy.load` (devuelve una lista)"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "introduction-to-qasm",
+  "interoperate-qiskit-qasm2",
+  "interoperate-qiskit-qasm3",
+  "qasm-feature-table",
+  "save-circuits"
+ ],
+ "practice": [
+  "Exporta a OpenQASM 3 un circuito con `if_test` y lee cómo queda el bloque `if`.",
+  "Copia el programa OpenQASM 3 de la guía original (con `input`, `let` y `while`) y cárgalo con `qasm3.loads`.",
+  "Guías originales: [introduction-to-qasm](https://quantum.cloud.ibm.com/docs/en/guides/introduction-to-qasm) · [interoperate-qiskit-qasm2](https://quantum.cloud.ibm.com/docs/en/guides/interoperate-qiskit-qasm2) · [interoperate-qiskit-qasm3](https://quantum.cloud.ibm.com/docs/en/guides/interoperate-qiskit-qasm3) · [qasm-feature-table](https://quantum.cloud.ibm.com/docs/en/guides/qasm-feature-table) · [save-circuits](https://quantum.cloud.ibm.com/docs/en/guides/save-circuits)"
+ ],
+ "next": "p2-visualizar",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

@@ -1,0 +1,62 @@
+"""Revisión visual: captura el estado final de cada beat (modo ?beat=N) y arma hojas de contacto.
+
+    uv run --with playwright --with pillow python tools/review.py [lección ...] [--port 8810]
+Salida: shots/<lección>/NN-land.png, NN-port.png y shots/<lección>-hoja-{land,port}.png
+"""
+import json
+import sys
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+from PIL import Image, ImageDraw
+
+ROOT = Path(__file__).parent.parent
+SITE, OUT = ROOT / "site", ROOT / "shots"
+port = sys.argv[sys.argv.index("--port") + 1] if "--port" in sys.argv else "8810"
+ids = [a for a in sys.argv[1:] if not a.startswith("--") and a != port] or \
+      [l["id"] for p in json.loads((SITE / "course.json").read_text(encoding="utf-8"))["parts"] for l in p["lessons"]]
+SIZES = {"land": (1366, 768), "port": (390, 844)}
+
+def sheet(files, dest, cols):
+    ims = [Image.open(f) for f in files]
+    w, h = ims[0].size
+    sc = 0.5 if w > 1000 else 0.6
+    tw, th = int(w * sc), int(h * sc)
+    rows = (len(ims) + cols - 1) // cols
+    S = Image.new("RGB", (cols * tw, rows * (th + 22)), "white")
+    d = ImageDraw.Draw(S)
+    for k, (f, im) in enumerate(zip(files, ims)):
+        x, y = (k % cols) * tw, (k // cols) * (th + 22)
+        S.paste(im.resize((tw, th)), (x, y + 22))
+        d.text((x + 6, y + 4), f.stem, fill="black")
+    S.save(dest)
+
+errors = {}
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    for lid in ids:
+        les = json.loads((SITE / "lessons" / lid / "lesson.json").read_text(encoding="utf-8"))
+        if not (SITE / "lessons" / lid / "timings.json").exists():
+            print(lid, "sin timings, se omite"); continue
+        (OUT / lid).mkdir(parents=True, exist_ok=True)
+        for tag, (w, h) in SIZES.items():
+            pg = b.new_page(viewport={"width": w, "height": h})
+            pg.on("pageerror", lambda e, lid=lid: errors.setdefault(lid, []).append(str(e)))
+            pg.on("console", lambda m, lid=lid: errors.setdefault(lid, []).append(m.text) if m.type == "error" else None)
+            files = []
+            for n, beat in enumerate(les["beats"]):
+                pg.goto(f"http://localhost:{port}/lesson.html?l={lid}&beat={n}")
+                pg.wait_for_timeout(1700)
+                f = OUT / lid / f"{n:02d}-{beat['id']}-{tag}.png"
+                pg.screenshot(path=str(f)); files.append(f)
+                # Desborde: algún bloque sale del escenario o se mete bajo la etiqueta superior.
+                over = pg.evaluate("""() => { const st = document.querySelector('#stage').getBoundingClientRect();
+                  const tag = document.querySelector('#tag').getBoundingClientRect();
+                  return [...document.querySelectorAll('#scene > .blk')].some(b => { const r = b.getBoundingClientRect();
+                    return r.height && (r.top < tag.bottom - 2 || r.bottom > st.bottom + 1 || r.left < st.left - 1 || r.right > st.right + 1); }); }""")
+                if over:
+                    errors.setdefault(lid, []).append(f"desborde en {n:02d}-{beat['id']}-{tag}")
+            pg.close()
+            sheet(files, OUT / f"{lid}-hoja-{tag}.png", 3 if tag == "land" else 6)
+        print(lid, "ok")
+    b.close()
+print("errores:", json.dumps(errors, ensure_ascii=False, indent=1) if errors else "ninguno")

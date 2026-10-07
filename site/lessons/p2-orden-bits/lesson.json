@@ -1,0 +1,480 @@
+{
+ "id": "p2-orden-bits",
+ "part": "Parte II · Circuitos y operadores",
+ "section": "2.3",
+ "title": "El orden de los bits",
+ "summary": "Little-endian en Qiskit: cómo se ordenan los qubits en diagramas, enteros, cadenas, vectores de estado y matrices de puertas.",
+ "goals": [
+  "leer correctamente una cadena de bits de Qiskit",
+  "pasar de un índice del vector de estado al estado de la base",
+  "escribir la matriz de una CX con la convención de Qiskit"
+ ],
+ "beats": [
+  {
+   "id": "intro",
+   "tag": [
+    "2.3",
+    "Un detalle que confunde a todos"
+   ],
+   "say": "Con n qubits, los numeramos de cero a n menos uno. La pregunta es en qué orden se escriben, en memoria y en pantalla. Cada programa elige una convención, y Qiskit usa la llamada little endian. [[lista]]Un circuito guarda sus qubits en una lista, y el índice en esa lista es la etiqueta del qubit. [[diag]]En los diagramas, el qubit cero está arriba y el último, abajo.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "El orden de los bits",
+     "style": "title"
+    },
+    {
+     "type": "code",
+     "src": "qc = QuantumCircuit(2)\nqc.qubits[0]     # el qubit \"0\"",
+     "lang": "python",
+     "id": "c",
+     "hidden": true,
+     "norun": true
+    },
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "x",
+       "q": [
+        1
+       ]
+      }
+     ],
+     "id": "q",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "c",
+     "at": "lista"
+    },
+    {
+     "do": "show",
+     "id": "q",
+     "at": "diag"
+    }
+   ]
+  },
+  {
+   "id": "enteros",
+   "tag": [
+    "2.3",
+    "Enteros y cadenas"
+   ],
+   "say": "Al leer los bits como un número, el bit cero es el menos significativo: cada bit k vale dos a la k. [[ej]]Si ponemos una X en el qubit uno y medimos, el bit cero vale cero y el bit uno vale uno: el número dos. [[cad]]Y al escribirlos como cadena, el bit n menos uno va a la izquierda y el bit cero a la derecha, como escribimos los números: el dígito más significativo primero. [[asi]]Por eso Qiskit imprime uno cero, aunque el qubit que cambiamos sea el uno.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\n\nqc = QuantumCircuit(2)\nqc.x(1)\nqc.measure_all()\nprint(StatevectorSampler().run([qc]).result()[0].data.meas.get_counts())",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "{'10': 1024}",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    },
+    {
+     "type": "math",
+     "tex": "\\underbrace{1}_{q_1}\\ \\underbrace{0}_{q_0}\\ =\\ 1\\cdot2^1+0\\cdot2^0=2",
+     "id": "m",
+     "hidden": true,
+     "size": 42
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "m",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "cad"
+    },
+    {
+     "do": "emph",
+     "id": "o",
+     "at": "asi"
+    }
+   ]
+  },
+  {
+   "id": "estados",
+   "tag": [
+    "2.3",
+    "Estados desde una cadena"
+   ],
+   "say": "Lo mismo vale al crear estados a partir de una cadena. [[mas]]Statevector from label cero más pone el qubit cero en más y el qubit uno en cero, porque la etiqueta de la derecha es la del qubit cero. [[prob]]Sus probabilidades: mitad cero cero, mitad cero uno. [[amp]]Y en el vector de estado, la amplitud en el índice x corresponde al estado de la base x escrito en binario: el índice uno es cero uno; el índice dos es uno cero.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.quantum_info import Statevector\n\nsv = Statevector.from_label(\"0+\")\nprint(sv.probabilities())   # índices 0, 1, 2, 3\nprint(sv[1])   # amplitud de |01>\nprint(sv[2])   # amplitud de |10>",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "[0.5 0.5 0.  0. ]\n(0.7071067811865475+0j)\n0j",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      3
+     ],
+     "id": "c",
+     "at": "mas"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "prob"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      5,
+      6
+     ],
+     "id": "c",
+     "at": "amp"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "2.3",
+    "Comprueba"
+   ],
+   "say": "Un vector de estado de tres qubits.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "\\text{sv}=[0,\\ 0,\\ 0,\\ 0,\\ 0,\\ 0,\\ 1,\\ 0]",
+     "size": 44
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "La única amplitud no nula está en el índice 6. ¿Qué qubits valen 1?",
+    "options": [
+     "$q_0$ y $q_1$",
+     "$q_1$ y $q_2$",
+     "$q_0$ y $q_2$",
+     "solo $q_2$"
+    ],
+    "right": 1,
+    "why": "Correcto: $6=110_2$, así que $q_2=1$, $q_1=1$ y $q_0=0$.",
+    "wrong": [
+     "Eso sería el índice $3=011_2$.",
+     null,
+     "Eso sería el índice $5=101_2$.",
+     "Eso sería el índice $4=100_2$."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cx",
+   "tag": [
+    "2.3",
+    "La matriz de la CX"
+   ],
+   "say": "Las puertas interpretan su lista de qubits a su manera, pero las controladas suelen seguir el orden control, objetivo. cx de cero, uno: control en el qubit cero, objetivo en el uno. [[trans]]Con las convenciones de Qiskit, esta CX intercambia cero uno con uno uno: es decir, cuando el qubit cero, el de la derecha, vale uno, invierte el de la izquierda. [[mat]]Su matriz, en el orden cero cero, cero uno, uno cero, uno uno, no es la que aparece en muchos libros: allí el control suele ser el qubit de la izquierda.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "cx",
+         "q": [
+          0,
+          1
+         ]
+        }
+       ],
+       "id": "q"
+      },
+      {
+       "type": "math",
+       "tex": "|0\\gold{1}\\rangle\\leftrightarrow|1\\gold{1}\\rangle",
+       "id": "t",
+       "hidden": true,
+       "size": 44
+      }
+     ],
+     "gap": 40
+    },
+    {
+     "type": "math",
+     "tex": "\\mathrm{CX}_{0\\to1}=\\begin{pmatrix}1&0&0&0\\\\0&0&0&1\\\\0&0&1&0\\\\0&1&0&0\\end{pmatrix}",
+     "id": "m",
+     "hidden": true,
+     "size": 42
+    },
+    {
+     "type": "text",
+     "text": "muchos libros ponen el control en el qubit de la izquierda y obtienen otra matriz",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "t",
+     "at": "trans"
+    },
+    {
+     "do": "show",
+     "id": "m",
+     "at": "mat"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "mat",
+     "t": 2
+    }
+   ]
+  },
+  {
+   "id": "reverse",
+   "tag": [
+    "2.3",
+    "Cambiar el orden"
+   ],
+   "say": "Si prefieres ver el qubit cero abajo, draw acepta reverse bits igual a True. [[dib]]Eso solo cambia el dibujo; el circuito es el mismo y la X sigue actuando sobre el qubit cero. [[met]]En cambio, el método reverse bits del circuito devuelve un circuito nuevo con las etiquetas invertidas: ahí la X sí actúa sobre el qubit uno. [[prim]]Y una nota sobre las primitivas: los resultados en bits de Sampler y Estimator de IBM vienen en orden big endian por defecto, mientras que Executor usa little endian.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "qc = QuantumCircuit(2)\nqc.x(0)\nqc.draw(reverse_bits=True)     # solo el dibujo\nqc2 = qc.reverse_bits()        # circuito nuevo: X sobre q1",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "x",
+         "q": [
+          1
+         ]
+        }
+       ],
+       "qlabels": [
+        "q₁",
+        "q₀"
+       ],
+       "id": "a",
+       "hidden": true
+      },
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "x",
+         "q": [
+          1
+         ]
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 60
+    },
+    {
+     "type": "text",
+     "text": "primitivas de IBM: Sampler y Estimator → big-endian · Executor → little-endian",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      3
+     ],
+     "id": "c",
+     "at": "dib"
+    },
+    {
+     "do": "show",
+     "id": "a",
+     "at": "dib"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      4
+     ],
+     "id": "c",
+     "at": "met"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "met"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "prim"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "2.3",
+    "Comprueba"
+   ],
+   "say": "Un circuito con tres qubits.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 3,
+     "ops": [
+      {
+       "g": "x",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "x",
+       "q": [
+        2
+       ]
+      },
+      {
+       "g": "barrier",
+       "q": []
+      },
+      {
+       "g": "measure",
+       "q": [
+        0
+       ],
+       "c": 0
+      },
+      {
+       "g": "measure",
+       "q": [
+        1
+       ],
+       "c": 1
+      },
+      {
+       "g": "measure",
+       "q": [
+        2
+       ],
+       "c": 2
+      }
+     ],
+     "clbits": 3,
+     "creg": "meas"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "numeric",
+    "prompt": "¿Qué entero devuelve `get_int_counts()`?",
+    "answer": 5,
+    "why": "Correcto: $q_0=1$ y $q_2=1$, así que $2^0+2^2=5$ (la cadena es `'101'`).",
+    "tol": 0.001,
+    "hint": "Cada qubit $k$ con valor 1 aporta $2^k$."
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "2.3",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]En los diagramas, el qubit cero está arriba. [[r2]]Como número, el bit cero es el menos significativo. [[r3]]Como cadena, el bit cero va a la derecha. [[r4]]Y en el vector de estado, el índice x es el estado x en binario. reverse bits en draw solo cambia el dibujo.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "diagramas: $q_0$ arriba",
+      "enteros: el bit $k$ vale $2^k$ (bit 0 = menos significativo)",
+      "cadenas: el bit 0 a la **derecha**",
+      "vector de estado: índice $x$ ↔ $|x\\rangle$ · `reverse_bits` solo cambia el dibujo"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "bit-ordering"
+ ],
+ "practice": [
+  "Calcula a mano `Operator(CXGate())` y compáralo con la salida de Qiskit; luego haz lo mismo con `qc.cx(1, 0)`.",
+  "Prepara $|q_2q_1q_0\\rangle=|110\\rangle$ con puertas X y verifica con `Statevector(qc).probabilities_dict()`.",
+  "Guías originales: [bit-ordering](https://quantum.cloud.ibm.com/docs/en/guides/bit-ordering)"
+ ],
+ "next": "p2-biblioteca",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

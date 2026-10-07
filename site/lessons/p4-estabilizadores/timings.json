@@ -1,0 +1,169 @@
+{
+ "def": {
+  "dur": 30.792,
+  "marks": {
+   "puertas": 10.091,
+   "rot": 16.658,
+   "import": 26.608
+  },
+  "cues": [
+   [
+    0.107,
+    "Los circuitos de estabilizadores, o de Clifford, son una clase restringida que se puede simular eficientemente en una computadora clásica."
+   ],
+   [
+    10.091,
+    "Una definición: los que solo usan CX, Hadamard, S y mediciones."
+   ],
+   [
+    16.658,
+    "Con H y S se construyen las rotaciones de Pauli con ángulos múltiplos de pi medios, salvo una fase global, así que también cuentan."
+   ],
+   [
+    26.608,
+    "Son centrales en la corrección de errores cuánticos."
+   ]
+  ]
+ },
+ "verificar": {
+  "dur": 26.808,
+  "marks": {
+   "cliff": 14.153,
+   "conf": 19.758
+  },
+  "cues": [
+   [
+    0.107,
+    "Supón que ejecutas un circuito de cien qubits en un computador cuántico."
+   ],
+   [
+    5.774,
+    "¿Cómo sabes si se comportó bien?"
+   ],
+   [
+    8.633,
+    "Un circuito así está fuera del alcance de la simulación por fuerza bruta."
+   ],
+   [
+    14.153,
+    "Pero si lo modificas para que sea de Clifford, puedes simularlo y comparar."
+   ],
+   [
+    19.758,
+    "Si el hardware reproduce bien la versión de Clifford, ganas confianza en el experimento original."
+   ]
+  ]
+ },
+ "q500": {
+  "dur": 26.496,
+  "marks": {
+   "sampler": 13.162,
+   "tr": 16.602,
+   "res": 20.352
+  },
+  "cues": [
+   [
+    0.107,
+    "Un efficient su2 de quinientos qubits es imposible de simular en general."
+   ],
+   [
+    5.732,
+    "Pero tiene parámetros: si todos los ángulos son múltiplos de pi medios, el circuito es de Clifford."
+   ],
+   [
+    13.162,
+    "Creamos un Sampler de Aer con el método stabilizer y transpilamos para el simulador en ese modo."
+   ],
+   [
+    20.352,
+    "Resultado: mil veinticuatro muestras de quinientos bits, en unos segundos."
+   ]
+  ]
+ },
+ "ruido": {
+  "dur": 29.832,
+  "marks": {
+   "ej": 13.856,
+   "no": 22.716
+  },
+  "cues": [
+   [
+    0.107,
+    "El simulador de estabilizadores también admite ruido, pero solo de un tipo: canales de error de Pauli."
+   ],
+   [
+    7.982,
+    "El despolarizante es uno de ellos, y también se admiten errores de lectura."
+   ],
+   [
+    13.856,
+    "Este modelo añade un dos por ciento de despolarizante a cada CX y un cinco por ciento de inversión en cada bit medido."
+   ],
+   [
+    22.716,
+    "En cambio, la relajación térmica no es un canal de Pauli, así que no se puede usar aquí."
+   ]
+  ]
+ },
+ "estimator": {
+  "dur": 19.416,
+  "marks": {
+   "cero": 7.756
+  },
+  "cues": [
+   [
+    0.107,
+    "Con Estimator funciona igual."
+   ],
+   [
+    3.029,
+    "Calculamos el valor esperado de Z en los quinientos qubits."
+   ],
+   [
+    7.756,
+    "Por la estructura especial de los estados de estabilizadores, el resultado casi siempre es cero: cada valor esperado de un Pauli vale más uno, menos uno o cero."
+   ]
+  ]
+ },
+ "q1": {
+  "dur": 2.016,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "¿Es de Clifford?"
+   ]
+  ]
+ },
+ "cierre": {
+  "dur": 22.632,
+  "marks": {
+   "r1": 1.868,
+   "r2": 7.798,
+   "r3": 12.341,
+   "r4": 18.597
+  },
+  "cues": [
+   [
+    0.107,
+    "Resumen."
+   ],
+   [
+    1.868,
+    "Los circuitos de Clifford usan H, S, CX y mediciones."
+   ],
+   [
+    7.798,
+    "Se simulan eficientemente, con cientos de qubits."
+   ],
+   [
+    12.341,
+    "En Aer se piden con method igual a stabilizer, y solo admiten ruido de Pauli."
+   ],
+   [
+    18.597,
+    "Y son una gran herramienta para verificar hardware."
+   ]
+  ]
+ }
+}

@@ -1,0 +1,389 @@
+{
+ "id": "p8-addons",
+ "part": "Parte VIII · Serverless, addons y Qiskit Functions",
+ "section": "8.2",
+ "title": "Qiskit addons",
+ "summary": "El catálogo de herramientas de investigación de Qiskit: qué hace cada addon y en qué paso del patrón encaja.",
+ "goals": [
+  "ubicar cada addon en el patrón de Qiskit",
+  "elegir el addon adecuado para un problema",
+  "generar un Hamiltoniano y su evolución con `qiskit-addon-utils`"
+ ],
+ "beats": [
+  {
+   "id": "que",
+   "tag": [
+    "8.2",
+    "¿Qué son los addons?"
+   ],
+   "say": "Los addons de Qiskit son componentes de investigación para descubrir algoritmos a escala de utilidad. Son paquetes modulares que se instalan aparte y encajan en algún paso del patrón de Qiskit. [[cats]]Se agrupan en seis categorías: mapear problemas; optimizar circuitos para el hardware; aprender modelos de ruido; gestionar el ruido al estimar valores esperados; gestionar el ruido al muestrear; y herramientas de apoyo.",
+   "scene": [
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "Mapear",
+       "s": "Fermions · AQC-Tensor · MPF",
+       "color": "blue"
+      },
+      {
+       "t": "Optimizar",
+       "s": "OBP · cutting",
+       "color": "violet"
+      },
+      {
+       "t": "Ejecutar",
+       "s": "noise learning · PNA · Mitigation · SLC",
+       "color": "gold"
+      },
+      {
+       "t": "Posprocesar",
+       "s": "SQD · M3 · Paulice",
+       "color": "teal"
+      }
+     ],
+     "id": "f",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "f",
+     "at": "cats"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "f",
+     "at": "cats",
+     "t": 3
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "f",
+     "at": "cats",
+     "t": 6
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "f",
+     "at": "cats",
+     "t": 10
+    }
+   ]
+  },
+  {
+   "id": "mapear",
+   "tag": [
+    "8.2",
+    "Mapear problemas"
+   ],
+   "say": "Para el primer paso, mapear. [[opt]]Optimization mapper modela problemas de optimización y los traduce a algo que entiende un computador cuántico. [[ferm]]Qiskit Fermions trabaja con sistemas fermiónicos: operadores, circuitos y codificaciones de fermiones a qubits. [[aqc]]AQC-Tensor construye circuitos menos profundos y de alta fidelidad con compilación aproximada mediante redes de tensores. [[mpf]]Y las fórmulas multiproducto, MPF, reducen el error de Trotter combinando con pesos varias ejecuciones.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Addon",
+      "Para qué"
+     ],
+     "rows": [
+      [
+       "Optimization mapper",
+       "problemas de optimización → operadores"
+      ],
+      [
+       "Qiskit Fermions",
+       "operadores fermiónicos y codificaciones"
+      ],
+      [
+       "AQC-Tensor",
+       "compilación aproximada con redes de tensores"
+      ],
+      [
+       "MPF",
+       "menos error de Trotter combinando ejecuciones"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "opt"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "ferm"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "aqc"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "mpf"
+    }
+   ]
+  },
+  {
+   "id": "optimizar",
+   "tag": [
+    "8.2",
+    "Optimizar circuitos"
+   ],
+   "say": "Para el segundo paso hay dos herramientas que reducen la profundidad, normalmente a cambio de más muestras. [[obp]]La retropropagación de operadores, OBP, hace pasar el observable hacia atrás por el final del circuito: el circuito que se ejecuta es más corto, a cambio de un observable con más términos. [[cut]]Y el corte de circuitos descompone puertas entre qubits lejanos, o parte el circuito en trozos más pequeños, y recombina los resultados.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "box",
+       "kind": "def",
+       "title": "OBP",
+       "body": [
+        {
+         "type": "text",
+         "text": "circuito más corto · observable más grande",
+         "style": "body"
+        }
+       ],
+       "id": "a",
+       "hidden": true
+      },
+      {
+       "type": "box",
+       "kind": "def",
+       "title": "Circuit cutting",
+       "body": [
+        {
+         "type": "text",
+         "text": "cortar puertas lejanas · más muestras",
+         "style": "body"
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "a",
+     "at": "obp"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "cut"
+    }
+   ]
+  },
+  {
+   "id": "ruido",
+   "tag": [
+    "8.2",
+    "Ruido"
+   ],
+   "say": "Para aprender el ruido, noise learning construye experimentos de caracterización y su análisis. Shaded lightcones, SLC, abarata la cancelación probabilística de errores quitando del modelo los términos de ruido que apenas afectan al observable. [[ev]]Para valores esperados: PNA, la absorción de ruido propagado, que viste en la Parte seis, y Qiskit Mitigation, para construir tus propios flujos de mitigación con Samplomatic. [[muestreo]]Para resultados de muestreo: SQD, la diagonalización cuántica basada en muestras, también en versión para HPC en C más más; la postselección con comprobaciones de inversión de bits; M3, mitigación de lectura en un subespacio reducido; y Paulice, comprobaciones de Pauli basadas en códigos de espacio-tiempo.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Objetivo",
+      "Addons"
+     ],
+     "rows": [
+      [
+       "aprender el ruido",
+       "Noise learning · Shaded lightcones (SLC)"
+      ],
+      [
+       "valores esperados",
+       "PNA · Qiskit Mitigation"
+      ],
+      [
+       "muestreo",
+       "SQD (y SQD-HPC) · postselección · M3 · Paulice"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "ev"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "muestreo"
+    }
+   ]
+  },
+  {
+   "id": "utils",
+   "tag": [
+    "8.2",
+    "Herramientas de apoyo"
+   ],
+   "say": "Por último, dos herramientas de apoyo: Pauli propagation, para aproximar la evolución de operadores, base de PNA y de SLC; y addon utilities, con utilidades para construir Hamiltonianos, circuitos de Trotter y mitigación. [[ej]]Probemos addon utilities: generamos un Hamiltoniano de Ising con campo transversal en una cadena de seis qubits, cinco términos ZZ y seis X, once en total. [[trotter]]Y su circuito de evolución temporal con dos pasos de Trotter: veinte CNOT, y rotaciones.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.transpiler import CouplingMap\nfrom qiskit.synthesis import LieTrotter\nfrom qiskit_addon_utils.problem_generators import (\n    generate_xyz_hamiltonian, generate_time_evolution_circuit)\n\ncoupling_map = CouplingMap.from_line(6, bidirectional=False)\nH = generate_xyz_hamiltonian(coupling_map, coupling_constants=(0.0, 0.0, 1.0),\n                             ext_magnetic_field=(0.4, 0.0, 0.0))\nprint(H.num_qubits, len(H))\ncircuit = generate_time_evolution_circuit(H, synthesis=LieTrotter(reps=2), time=0.2)\nprint(circuit.decompose().count_ops())",
+     "lang": "python",
+     "id": "c",
+     "size": 21
+    },
+    {
+     "type": "code",
+     "src": "6 11\nOrderedDict({'cx': 20, 'r': 12, 'rz': 10})",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "6-9",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "hl",
+     "range": "10-11",
+     "id": "c",
+     "at": "trotter"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "trotter",
+     "t": 1
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "8.2",
+    "Comprueba"
+   ],
+   "say": "Elige el addon.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tu circuito de evolución temporal es demasiado profundo y solo quieres un valor esperado al final.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué addon reduce directamente la profundidad del circuito ejecutado?",
+    "options": [
+     "M3",
+     "OBP (retropropagación de operadores)",
+     "SQD"
+    ],
+    "right": 1,
+    "why": "Correcto: OBP absorbe las últimas capas del circuito en el observable; ejecutas un circuito más corto a cambio de medir más términos.",
+    "wrong": [
+     "M3 mitiga errores de lectura; no cambia el circuito.",
+     null,
+     "SQD posprocesa muestras para diagonalizar Hamiltonianos."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "8.2",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Para mapear: Fermions, AQC-Tensor, MPF. [[r2]]Para optimizar: OBP y corte de circuitos. [[r3]]Para el ruido: noise learning, PNA, Mitigation, SQD, M3 y Paulice. [[r4]]Y de apoyo, addon utilities y Pauli propagation.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "mapear: optimization mapper, Qiskit Fermions, AQC-Tensor, MPF",
+      "optimizar circuitos: OBP, circuit cutting",
+      "ruido: noise learning, SLC, PNA, Qiskit Mitigation · muestreo: SQD, M3, Paulice, postselección",
+      "apoyo: addon utilities, Pauli propagation"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "addons"
+ ],
+ "practice": [
+  "Instala `qiskit-addon-obp` y reduce con él la profundidad del circuito de Trotter de esta lección.",
+  "Recorre los tutoriales de [SQD](https://quantum.cloud.ibm.com/docs/en/addons/qiskit-addon-sqd) para una molécula pequeña.",
+  "Guías originales: [addons](https://quantum.cloud.ibm.com/docs/en/guides/addons)"
+ ],
+ "next": "p8-functions",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

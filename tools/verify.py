@@ -1,0 +1,64 @@
+"""Ejecuta el código Python que aparece en las lecciones, en orden, con un espacio de nombres por lección.
+
+    uv run python tools/verify.py [lección ...]
+
+Así se comprueba que todo el código que se enseña funciona con las versiones instaladas.
+Si un bloque Out(…, check=True) sigue a un bloque de código en la misma escena, su texto debe
+coincidir exactamente con lo que imprime ese código. Bloques con norun=True se omiten
+(por ejemplo, los que necesitan una cuenta de IBM Quantum).
+"""
+import contextlib
+import io
+import os
+import tempfile
+import json
+import sys
+import traceback
+from pathlib import Path
+
+import matplotlib
+
+sys.stdout.reconfigure(encoding="utf-8")
+
+matplotlib.use("Agg")
+SITE = Path(__file__).resolve().parent.parent / "site"
+ids = [a for a in sys.argv[1:] if not a.startswith("-")] or [l["id"] for p in json.loads((SITE / "course.json").read_text(encoding="utf-8"))["parts"]
+                       for l in p["lessons"] if not l.get("pending")]
+
+
+def blocks(scene):
+    for s in scene:
+        yield s
+        yield from blocks([x for x in s.get("items", []) + s.get("body", []) if isinstance(x, dict)])
+
+
+fails = 0
+os.chdir(tempfile.mkdtemp(prefix="verify-"))  # los ejemplos que guardan archivos no ensucian el proyecto
+for lid in ids:
+    les = json.loads((SITE / "lessons" / lid / "lesson.json").read_text(encoding="utf-8"))
+    ns, n = {"__name__": "__leccion__"}, 0
+    for b in les["beats"]:
+        bl = list(blocks(b["scene"]))
+        for k, s in enumerate(bl):
+            if s.get("type") != "code" or s.get("lang") != "python" or s.get("norun"):
+                continue
+            n += 1
+            buf = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(buf):
+                    exec(compile(s["src"], f"{lid}/{b['id']}", "exec"), ns)
+            except Exception:
+                fails += 1
+                print(f"✗ {lid}/{b['id']}\n{traceback.format_exc(limit=2)}")
+                continue
+            out = buf.getvalue().rstrip()
+            nxt = bl[k + 1] if k + 1 < len(bl) else None
+            if nxt and nxt.get("type") == "code" and nxt.get("lang") == "out" and nxt.get("check"):
+                if out != nxt["src"].rstrip():
+                    fails += 1
+                    print(f"✗ {lid}/{b['id']}: la salida no coincide\n--- esperado\n{nxt['src']}\n--- obtenido\n{out}")
+            if "-v" in sys.argv or "--show" in sys.argv:
+                print(f"· {lid}/{b['id']}\n{out}")
+    print(f"{lid}: {n} bloques ejecutados")
+print("fallos:", fails)
+sys.exit(1 if fails else 0)

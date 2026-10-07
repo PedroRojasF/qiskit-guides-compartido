@@ -1,0 +1,516 @@
+{
+ "id": "p9-migraciones",
+ "part": "Parte IX · Extender e integrar Qiskit",
+ "section": "9.5",
+ "title": "Versiones y migraciones",
+ "summary": "La estrategia de versiones de Qiskit, las migraciones a 1.0 y 2.0, el paso a las primitivas del lado del cliente y cómo seguir las novedades.",
+ "goals": [
+  "entender el versionado y el ciclo de soporte de Qiskit",
+  "migrar código de Qiskit 1.x a 2.x",
+  "pasar a las primitivas del lado del cliente"
+ ],
+ "beats": [
+  {
+   "id": "semver",
+   "tag": [
+    "9.5",
+    "Versionado semántico"
+   ],
+   "say": "Qiskit sigue el versionado semántico: mayor punto menor punto parche. [[mayor]]Los cambios incompatibles solo llegan en versiones mayores, como mínimo una vez al año. [[menor]]Las menores, aproximadamente cada tres meses, añaden funciones sin romper nada. [[parche]]Y los parches corrigen errores. [[soporte]]Cuando sale una mayor, la anterior recibe correcciones de errores al menos seis meses, y de seguridad un año. Por eso las bibliotecas que dependen de Qiskit no deberían exigir la nueva mayor de inmediato. [[api]]La API pública es todo lo documentado que no empieza con guion bajo. Las versiones de Python y de las dependencias no forman parte de la garantía.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "\\underbrace{2}_{\\text{mayor}}\\,.\\,\\underbrace{5}_{\\text{menor}}\\,.\\,\\underbrace{2}_{\\text{parche}}",
+     "size": 50
+    },
+    {
+     "type": "table",
+     "head": [
+      "Versión",
+      "Frecuencia",
+      "Contenido"
+     ],
+     "rows": [
+      [
+       "mayor",
+       "≥ 1 año",
+       "cambios incompatibles"
+      ],
+      [
+       "menor",
+       "~ 3 meses",
+       "funciones nuevas"
+      ],
+      [
+       "parche",
+       "cuando haga falta",
+       "correcciones"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 23
+    },
+    {
+     "type": "text",
+     "text": "la mayor anterior: errores ≥ 6 meses · seguridad 1 año",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "mayor"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "menor"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "parche"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "soporte"
+    }
+   ]
+  },
+  {
+   "id": "v1",
+   "tag": [
+    "9.5",
+    "Qiskit 1.0: el fin del metapaquete"
+   ],
+   "say": "Antes de la uno punto cero, el paquete qiskit era un metapaquete sin código propio: el núcleo vivía en qiskit terra, junto a Aer, el proveedor de IBM y otros paquetes. [[cambio]]Qiskit uno punto cero volvió a la estructura simple de cualquier paquete de Python: qiskit contiene el código. Fue un cambio único: [[entorno]]no se puede actualizar un entorno viejo en su sitio; hay que crear un entorno virtual nuevo, y un archivo de restricciones impide que alguna dependencia reinstale qiskit terra. [[herramienta]]Para el código, flake8 qiskit migration detecta importaciones eliminadas, como qiskit punto Aer o execute, y sugiere alternativas.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "box",
+       "kind": "warn",
+       "title": "antes de 1.0",
+       "body": [
+        {
+         "type": "text",
+         "text": "`qiskit` = metapaquete · código en `qiskit-terra`",
+         "style": "body"
+        }
+       ]
+      },
+      {
+       "type": "box",
+       "kind": "idea",
+       "title": "desde 1.0",
+       "body": [
+        {
+         "type": "text",
+         "text": "`qiskit` contiene el código",
+         "style": "body"
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 24
+    },
+    {
+     "type": "code",
+     "src": "python -m venv .venv\npip install -c https://qisk.it/1-0-constraints qiskit\npipx run flake8-qiskit-migration src/",
+     "lang": "sh",
+     "id": "c",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "b",
+     "at": "cambio"
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "entorno"
+    },
+    {
+     "do": "hl",
+     "range": "1-2",
+     "id": "c",
+     "at": "entorno"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      3
+     ],
+     "id": "c",
+     "at": "herramienta"
+    }
+   ]
+  },
+  {
+   "id": "v2",
+   "tag": [
+    "9.5",
+    "Qiskit 2.0"
+   ],
+   "say": "Qiskit dos punto cero rompió compatibilidad sin cambiar la estructura de paquetes. Tres cambios principales. [[cif]]Uno: desaparece c if; las condiciones se escriben con if test, que ya viste en la Parte dos. [[dur]]Dos: las instrucciones ya no tienen duration ni unit; las duraciones se consultan en el Target, y para la duración del circuito, estimate duration. [[pulse]]Y tres: qiskit punto pulse se eliminó por completo, con todo lo relacionado con calibraciones.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister\n\nqr, cr = QuantumRegister(2, \"q\"), ClassicalRegister(2, \"c\")\nqc = QuantumCircuit(qr, cr)\nqc.h([0, 1])\nqc.measure(qr, cr)\n# antes: qc.x(0).c_if(cr, 3)\nwith qc.if_test((cr, 3)):\n    qc.x(0)\nprint(dict(qc.count_ops()))",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    },
+    {
+     "type": "code",
+     "src": "{'h': 2, 'measure': 2, 'if_else': 1}",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    },
+    {
+     "type": "code",
+     "src": "# antes: instruction.duration\nduration = getattr(target[\"cx\"][2, 4], \"duration\", None)",
+     "lang": "python",
+     "id": "d",
+     "hidden": true,
+     "norun": true,
+     "size": 21
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "7-9",
+     "id": "c",
+     "at": "cif"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "cif",
+     "t": 3
+    },
+    {
+     "do": "show",
+     "id": "d",
+     "at": "dur"
+    }
+   ]
+  },
+  {
+   "id": "v2_transp",
+   "tag": [
+    "9.5",
+    "El transpilador en 2.0"
+   ],
+   "say": "En el transpilador, se acabaron casi todas las restricciones sueltas: backend properties, instruction durations y timing constraints ya no se aceptan. Lo que antes pasabas por separado, ahora va en un Target. [[como]]Puedes construirlo desde cero, partir de GenericBackendV2, o usar Target punto from configuration. [[mezcla]]Y pasar coupling map o basis gates junto con un backend da un aviso: habría dos fuentes de verdad.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit.circuit.library import CXGate, XGate\nfrom qiskit.transpiler import Target, InstructionProperties, generate_preset_pass_manager\n\ntarget = Target(num_qubits=2)\ntarget.add_instruction(CXGate(), {(0, 1): InstructionProperties(error=1e-4, duration=5e-7)})\ntarget.add_instruction(XGate(), {(0,): InstructionProperties(error=1e-5, duration=5e-8),\n                                 (1,): InstructionProperties(error=2e-5, duration=6e-8)})\npm = generate_preset_pass_manager(target=target)\nprint(pm.run(QuantumCircuit(2)).num_qubits)",
+     "lang": "python",
+     "id": "c",
+     "size": 20
+    },
+    {
+     "type": "code",
+     "src": "2",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "5-9",
+     "id": "c",
+     "at": "como"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "como",
+     "t": 3
+    }
+   ]
+  },
+  {
+   "id": "cliente",
+   "tag": [
+    "9.5",
+    "Primitivas del lado del cliente"
+   ],
+   "say": "El cambio más reciente: desde qiskit ibm runtime cero punto cincuenta, Sampler y Estimator se reimplementan del lado del cliente, sobre Executor. Antes eran una caja negra en el servidor; ahora puedes inspeccionar lo que hacen. [[imports]]La migración es casi solo cambiar las importaciones; pronto, las de siempre apuntarán a las nuevas. [[igual]]Se mantienen el modo, las opciones, la firma de run, los PUBs y los resultados.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit_ibm_runtime.executor_sampler import Sampler\nfrom qiskit_ibm_runtime.executor_estimator import Estimator\nfrom qiskit_ibm_runtime.options_models import SamplerOptions, EstimatorOptions",
+     "lang": "python",
+     "id": "c",
+     "norun": true,
+     "size": 21
+    },
+    {
+     "type": "text",
+     "text": "igual: `mode`, opciones, `run()`, PUBs y resultados",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "1-3",
+     "id": "c",
+     "at": "imports"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "igual"
+    }
+   ]
+  },
+  {
+   "id": "diferencias",
+   "tag": [
+    "9.5",
+    "Qué cambia"
+   ],
+   "say": "Algunas diferencias. [[pydantic]]Las opciones son ahora modelos de Pydantic: en lugar de asdict, usa model dump; y las opciones eliminadas, como seed estimator, dan error de validación. [[mezcla]]No se pueden mezclar disparos o precisiones distintos en un trabajo: agrupa los PUBs por valor, un trabajo por grupo, todos en un lote. [[ruido]]Y para PEA y PEC ya no hay aprendizaje de ruido implícito: lo haces tú con NoiseLearnerV3 y pasas el modelo al Estimator. [[local]]Para probar en local con un backend falso, la guía sugiere cliffordizar el circuito ISA, con ConvertISAToClifford: se simula rápido, pero pierde el layout, así que el observable se adapta con el layout del circuito original.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit.transpiler import PassManager, generate_preset_pass_manager\nfrom qiskit_ibm_runtime.fake_provider import FakeFez\nfrom qiskit_ibm_runtime.transpiler.passes import ConvertISAToClifford\nfrom qiskit_ibm_runtime.options_models import EstimatorOptions\n\noptions = EstimatorOptions()\noptions.default_shots = 2000\nprint(options.model_dump()[\"default_shots\"])\ntry:\n    options.seed_estimator = 1\nexcept Exception as e:\n    print(type(e).__name__)\n\nqc = QuantumCircuit(2)\nqc.rx(0.3, 0)\nqc.cx(0, 1)\nisa = generate_preset_pass_manager(1, backend=FakeFez(), seed_transpiler=1).run(qc)\nclifford = PassManager([ConvertISAToClifford()]).run(isa)\nprint(clifford.layout)",
+     "lang": "python",
+     "id": "c",
+     "size": 18
+    },
+    {
+     "type": "code",
+     "src": "2000\nValidationError\nNone",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "7-13",
+     "id": "c",
+     "at": "pydantic"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "pydantic",
+     "t": 4
+    },
+    {
+     "do": "hl",
+     "range": "15-20",
+     "id": "c",
+     "at": "local"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "9.5",
+    "Comprueba"
+   ],
+   "say": "Divide el trabajo.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tienes PUBs A y C con precisión 0,01, y B con precisión 0,05. Usas el Estimator del lado del cliente.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "numeric",
+    "prompt": "¿Cuántos trabajos envías como mínimo?",
+    "answer": 2,
+    "why": "Correcto: uno con [A, C] a 0,01 y otro con [B] a 0,05, ambos dentro de un `Batch`, enviando los dos antes de pedir resultados.",
+    "tol": 0.0001,
+    "hint": "Un trabajo por valor distinto de precisión, no por PUB."
+   },
+   "align": "top"
+  },
+  {
+   "id": "novedades",
+   "tag": [
+    "9.5",
+    "Seguir las novedades"
+   ],
+   "say": "Para estar al día, la documentación tiene registros de cambios: del SDK, del cliente y del servicio de computación cuántica, del servicio de transpilación, de los addons, de Functions y de las skills. [[recientes]]Algunas novedades recientes: el servicio Qiskit Runtime pasó a llamarse IBM Quantum Compute Service; llegó ibm phoenix, el primer Nighthawk r2, con reset rápido, un rep delay de un microsegundo y más de cien mil circuitos por segundo; y Composer admite OpenQASM tres.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "SDK de Qiskit · cliente y servicio de computación cuántica",
+      "servicio de transpilación · addons · Functions · skills"
+     ],
+     "id": "l"
+    },
+    {
+     "type": "table",
+     "head": [
+      "Fecha",
+      "Novedad"
+     ],
+     "rows": [
+      [
+       "jul 2026",
+       "Qiskit Runtime → IBM Quantum Compute Service"
+      ],
+      [
+       "sep 2026",
+       "`ibm_phoenix` (Nighthawk r2): `rep_delay` 1 µs, > 100 000 MCPS"
+      ],
+      [
+       "sep 2026",
+       "runtime 0.50: primitivas del lado del cliente"
+      ],
+      [
+       "ago 2026",
+       "Composer con OpenQASM 3"
+      ]
+     ],
+     "id": "t",
+     "hidden": true,
+     "stagger": true,
+     "size": 21
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "t",
+     "at": "recientes"
+    },
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "recientes"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "recientes",
+     "t": 4
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "recientes",
+     "t": 9
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "recientes",
+     "t": 11
+    }
+   ]
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "9.5",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Qiskit usa versionado semántico, con soporte extendido para la mayor anterior. [[r2]]La uno punto cero eliminó el metapaquete. [[r3]]La dos punto cero quitó c if, pulse y las restricciones sueltas. [[r4]]Y las primitivas pasan al lado del cliente. Con esto termina la Parte nueve.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "versionado semántico X.Y.Z · mayor al menos cada año · menor cada ~3 meses",
+      "Qiskit 1.0: fin del metapaquete (`qiskit-terra`) · entorno nuevo · `flake8-qiskit-migration`",
+      "Qiskit 2.0: sin `c_if` (usa `if_test`), sin `qiskit.pulse`, `target` en vez de restricciones sueltas",
+      "runtime 0.50: Sampler/Estimator del lado del cliente sobre Executor · aprendizaje de ruido explícito"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "qiskit-sdk-version-strategy",
+  "qiskit-2.0",
+  "qiskit-1.0",
+  "metapackage-migration",
+  "qiskit-1.0-installation",
+  "qiskit-1.0-features",
+  "migrate-to-client-side-primitives",
+  "changelog-quantum-compute-service",
+  "changelog-qiskit",
+  "changelog-quantum-compute",
+  "changelog-qiskit-transpiler",
+  "changelog-qiskit-addons",
+  "changelog-qiskit-functions",
+  "changelog-qiskit-skills"
+ ],
+ "practice": [
+  "Ejecuta `flake8-qiskit-migration` sobre un cuaderno viejo de Qiskit 0.x y corrige lo que encuentre.",
+  "Migra a las primitivas del lado del cliente un script tuyo con Estimator y compara `job.inputs` antes y después.",
+  "Guías originales: [qiskit-sdk-version-strategy](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-sdk-version-strategy) · [qiskit-2.0](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-2.0) · [qiskit-1.0](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-1.0) · [metapackage-migration](https://quantum.cloud.ibm.com/docs/en/guides/metapackage-migration) · [qiskit-1.0-installation](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-1.0-installation) · [qiskit-1.0-features](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-1.0-features) · [migrate-to-client-side-primitives](https://quantum.cloud.ibm.com/docs/en/guides/migrate-to-client-side-primitives) · [changelog-quantum-compute-service](https://quantum.cloud.ibm.com/docs/en/guides/changelog-quantum-compute-service) · [changelog-qiskit](https://quantum.cloud.ibm.com/docs/en/guides/changelog-qiskit) · [changelog-quantum-compute](https://quantum.cloud.ibm.com/docs/en/guides/changelog-quantum-compute) · [changelog-qiskit-transpiler](https://quantum.cloud.ibm.com/docs/en/guides/changelog-qiskit-transpiler) · [changelog-qiskit-addons](https://quantum.cloud.ibm.com/docs/en/guides/changelog-qiskit-addons) · [changelog-qiskit-functions](https://quantum.cloud.ibm.com/docs/en/guides/changelog-qiskit-functions) · [changelog-qiskit-skills](https://quantum.cloud.ibm.com/docs/en/guides/changelog-qiskit-skills)"
+ ],
+ "next": "p10-organizaciones",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

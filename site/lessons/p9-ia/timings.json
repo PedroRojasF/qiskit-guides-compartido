@@ -1,0 +1,168 @@
+{
+ "assistant": {
+  "dur": 39.984,
+  "marks": {
+   "abiertos": 15.101,
+   "bench": 25.716
+  },
+  "cues": [
+   [
+    0.107,
+    "Qiskit Code Assistant es una familia de modelos de lenguaje entrenados con el código, los ejemplos y la documentación de Qiskit."
+   ],
+   [
+    8.945,
+    "El modelo actual es mistral small tres punto dos, veinticuatro b, qiskit."
+   ],
+   [
+    15.101,
+    "Todos son modelos abiertos, publicados en Hugging Face."
+   ],
+   [
+    19.828,
+    "Hay versiones GGUF, más ligeras, pensadas para laptops."
+   ],
+   [
+    25.716,
+    "Para medirlos, IBM creó el benchmark Qiskit HumanEval: unas ciento cincuenta tareas de programación con Qiskit, con pruebas unitarias, en tres niveles de dificultad, y una versión difícil."
+   ]
+  ]
+ },
+ "local": {
+  "dur": 31.416,
+  "marks": {
+   "cmds": 9.483,
+   "llama": 16.149,
+   "editores": 19.786
+  },
+  "cues": [
+   [
+    0.107,
+    "La forma más sencilla de usarlo en tu equipo es Ollama: un comando descarga el modelo GGUF desde Hugging Face y abre un chat."
+   ],
+   [
+    9.483,
+    "Con ollama list ves tus modelos, con ps los cargados, y con rm los borras."
+   ],
+   [
+    16.149,
+    "También puedes usar llama punto cpp."
+   ],
+   [
+    19.786,
+    "Y conectarlo a tu editor: a VS Code con la extensión Continue, a JupyterLab con Jupyter AI y su comando mágico ai, o a la terminal con OpenCode."
+   ]
+  ]
+ },
+ "mcp": {
+  "dur": 49.008,
+  "marks": {
+   "lista": 15.526,
+   "auth": 38.525
+  },
+  "cues": [
+   [
+    0.107,
+    "El protocolo de contexto de modelos, MCP, permite que un asistente de IA use herramientas externas."
+   ],
+   [
+    8.775,
+    "Los servidores MCP de Qiskit le dan acceso a Qiskit y a los servicios de IBM."
+   ],
+   [
+    15.526,
+    "Hay varios: el de Qiskit, para crear, transpilar y serializar circuitos en local; el de Runtime, para consultar backends y enviar trabajos; el de documentación; el del transpilador con IA; el de Code Assistant; y uno de la comunidad, Qiskit Gym, con aprendizaje por refuerzo para síntesis de circuitos."
+   ],
+   [
+    38.525,
+    "Los de Qiskit y de documentación no necesitan credenciales; los de Runtime y el transpilador leen tu clave de la variable QISKIT IBM TOKEN."
+   ]
+  ]
+ },
+ "config": {
+  "dur": 19.176,
+  "marks": {
+   "cliente": 4.67,
+   "probar": 14.634
+  },
+  "cues": [
+   [
+    0.107,
+    "Se instalan con pip, todos juntos o por separado."
+   ],
+   [
+    4.67,
+    "Después se declaran en la configuración de tu cliente MCP, como Claude Desktop o Cursor: cada servidor con el comando que lo arranca."
+   ],
+   [
+    14.634,
+    "Y para probarlos, el inspector de MCP."
+   ]
+  ]
+ },
+ "skills": {
+  "dur": 31.176,
+  "marks": {
+   "migrar": 14.818
+  },
+  "cues": [
+   [
+    0.107,
+    "Por último, las skills de Qiskit: conjuntos de instrucciones reutilizables que enseñan a un asistente de IA a hacer una tarea concreta de forma consistente."
+   ],
+   [
+    11.549,
+    "Sirven con distintos asistentes."
+   ],
+   [
+    14.818,
+    "La primera es migrate qiskit ibm runtime, para migrar código: por ejemplo, de las primitivas V1 a las V2, o a las nuevas primitivas del lado del cliente."
+   ],
+   [
+    27.004,
+    "Se la das al asistente y le dices dónde aplicarla."
+   ]
+  ]
+ },
+ "q1": {
+  "dur": 2.52,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Elige la herramienta."
+   ]
+  ]
+ },
+ "cierre": {
+  "dur": 21.744,
+  "marks": {
+   "r1": 1.868,
+   "r2": 7.19,
+   "r3": 9.95,
+   "r4": 16.503
+  },
+  "cues": [
+   [
+    0.107,
+    "Resumen."
+   ],
+   [
+    1.868,
+    "Qiskit Code Assistant son modelos abiertos que puedes ejecutar en tu equipo."
+   ],
+   [
+    7.19,
+    "Se integran en tu editor."
+   ],
+   [
+    9.95,
+    "Los servidores MCP conectan asistentes con Qiskit y los servicios de IBM."
+   ],
+   [
+    16.503,
+    "Y las skills enseñan tareas concretas, como migrar código."
+   ]
+  ]
+ }
+}

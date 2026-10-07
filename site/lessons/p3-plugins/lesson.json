@@ -1,0 +1,503 @@
+{
+ "id": "p3-plugins",
+ "part": "Parte III · Transpilación",
+ "section": "3.7",
+ "title": "Plugins y transpilación con IA",
+ "summary": "Los tres tipos de plugins del transpilador, cómo listarlos, usarlos y crearlos, y los pases de routing y síntesis con inteligencia artificial.",
+ "goals": [
+  "listar y usar plugins de etapa, de síntesis unitaria y de alto nivel",
+  "crear un plugin y publicarlo con un entry point",
+  "usar los pases de IA de `qiskit-ibm-transpiler`"
+ ],
+ "beats": [
+  {
+   "id": "tipos",
+   "tag": [
+    "3.7",
+    "Tres tipos de plugins"
+   ],
+   "say": "Qiskit permite que paquetes de terceros añadan funciones al transpilador mediante plugins. Hay tres tipos. [[etapa]]Un plugin de etapa ofrece un pass manager que sustituye a una de las seis etapas. [[unit]]Un plugin de síntesis unitaria recibe una matriz y devuelve un circuito. [[hl]]Y un plugin de síntesis de alto nivel sintetiza objetos abstractos, como funciones lineales u operadores de Clifford. [[eco]]Varios plugins de terceros forman parte del ecosistema de Qiskit; se instalan con pip, por ejemplo qiskit toqm para el routing.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Tipo",
+      "Entrada → salida",
+      "Se usa con"
+     ],
+     "rows": [
+      [
+       "Etapa",
+       "reemplaza una de las 6 etapas",
+       "`layout_method=`, `routing_method=`…"
+      ],
+      [
+       "Síntesis unitaria",
+       "matriz → circuito",
+       "`unitary_synthesis_method=`"
+      ],
+      [
+       "Síntesis de alto nivel",
+       "Clifford, función lineal… → circuito",
+       "`hls_config=`"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 23
+    },
+    {
+     "type": "code",
+     "src": "$ pip install qiskit-toqm",
+     "lang": "sh",
+     "id": "s",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "etapa"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "unit"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "hl"
+    },
+    {
+     "do": "show",
+     "id": "s",
+     "at": "eco"
+    }
+   ]
+  },
+  {
+   "id": "listar",
+   "tag": [
+    "3.7",
+    "Ver qué plugins hay"
+   ],
+   "say": "Para cada tipo hay una función que lista lo instalado. [[stage]]list stage plugins, con el nombre de la etapa. [[unit]]unitary synthesis plugin names: aquí aparecen aqc, clifford, gridsynth y sk, el algoritmo de Solovay Kitaev. [[hl]]Y high level synthesis plugin names, con el tipo de objeto: para Clifford, siete métodos distintos.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.transpiler.passes.synthesis import (\n    unitary_synthesis_plugin_names, high_level_synthesis_plugin_names)\n\nprint(unitary_synthesis_plugin_names())\nprint(high_level_synthesis_plugin_names(\"clifford\"))",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "['aqc', 'clifford', 'default', 'gridsynth', 'sk']\n['ag', 'bm', 'default', 'greedy', 'layers', 'lnn']",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "o",
+     "at": "unit"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      5
+     ],
+     "id": "c",
+     "at": "hl"
+    }
+   ]
+  },
+  {
+   "id": "usar",
+   "tag": [
+    "3.7",
+    "Usar un plugin"
+   ],
+   "say": "Para usar un plugin de etapa, pasa su nombre en el argumento de esa etapa terminado en method: aquí, routing method igual a lookahead. [[unit]]Para síntesis unitaria, unitary synthesis method, y sus opciones en un diccionario libre, unitary synthesis plugin config. [[hls]]Para alto nivel, crea un HLSConfig con una lista de métodos por tipo de objeto: se prueban en orden hasta que uno funciona. Y pásalo como hls config.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.transpiler import generate_preset_pass_manager\nfrom qiskit.transpiler.passes import HLSConfig\nfrom qiskit_ibm_runtime.fake_provider import FakeSherbrooke\n\nbackend = FakeSherbrooke()\npm1 = generate_preset_pass_manager(3, backend=backend, routing_method=\"lookahead\")\npm2 = generate_preset_pass_manager(3, backend=backend,\n    unitary_synthesis_method=\"sk\",\n    unitary_synthesis_plugin_config=dict(basis_gates=[\"cz\", \"id\", \"rz\", \"sx\", \"x\"]))\nhls_config = HLSConfig(clifford=[\"layers\"], linear_function=[\"pmh\"])\npm3 = generate_preset_pass_manager(3, backend=backend, hls_config=hls_config)",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      6
+     ],
+     "id": "c"
+    },
+    {
+     "do": "hl",
+     "range": "7-9",
+     "id": "c",
+     "at": "unit"
+    },
+    {
+     "do": "hl",
+     "range": "10-11",
+     "id": "c",
+     "at": "hls"
+    }
+   ]
+  },
+  {
+   "id": "crear",
+   "tag": [
+    "3.7",
+    "Crear un plugin"
+   ],
+   "say": "Crear un plugin es una gran forma de compartir tu trabajo. Son dos pasos. [[sub]]Primero, una subclase de la clase abstracta adecuada: PassManagerStagePlugin, UnitarySynthesisPlugin o HighLevelSynthesisPlugin. [[ej]]Este plugin de layout implementa pass manager: ejecuta VF2Layout con más intentos cuanto mayor el nivel de optimización, y luego incrusta el layout en el dispositivo. [[ep]]Segundo, exponerlo como entry point en los metadatos del paquete, por ejemplo en pyproject punto toml. [[nombres]]Cada plugin necesita un nombre único; los nombres que usa Qiskit, como default o sk, están reservados.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.transpiler import PassManager\nfrom qiskit.transpiler.passes import VF2Layout\nfrom qiskit.transpiler.preset_passmanagers import common\nfrom qiskit.transpiler.preset_passmanagers.plugin import PassManagerStagePlugin\n\nclass MyLayoutPlugin(PassManagerStagePlugin):\n    def pass_manager(self, pass_manager_config, optimization_level=None):\n        layout_pm = PassManager([VF2Layout(\n            coupling_map=pass_manager_config.coupling_map,\n            max_trials=optimization_level * 10 + 1,\n            target=pass_manager_config.target)])\n        layout_pm += common.generate_embed_passmanager(pass_manager_config.coupling_map)\n        return layout_pm",
+     "lang": "python",
+     "id": "c",
+     "size": 21
+    },
+    {
+     "type": "code",
+     "src": "[project.entry-points.\"qiskit.transpiler.layout\"]\n\"my_layout\" = \"my_qiskit_plugin:MyLayoutPlugin\"",
+     "lang": "text",
+     "title": "pyproject.toml",
+     "id": "t",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      6
+     ],
+     "id": "c",
+     "at": "sub"
+    },
+    {
+     "do": "hl",
+     "range": "7-13",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "t",
+     "at": "ep"
+    }
+   ]
+  },
+  {
+   "id": "otros",
+   "tag": [
+    "3.7",
+    "Plugins de síntesis"
+   ],
+   "say": "Los otros dos tipos siguen el mismo esquema. [[unit]]Un UnitarySynthesisPlugin implementa run, que recibe una matriz de NumPy y devuelve un DAGCircuit, y declara qué admite con propiedades como supports basis gates o supports coupling map. [[hl]]Un HighLevelSynthesisPlugin implementa run, que recibe el objeto, por ejemplo un Clifford, y devuelve un QuantumCircuit; o None si no puede sintetizarlo, y entonces se prueba el siguiente método. [[ep]]Los entry points son qiskit punto unitary synthesis y qiskit punto synthesis; en este último, el nombre lleva el tipo de objeto, punto, el nombre del plugin.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.synthesis import synth_clifford_bm\nfrom qiskit.transpiler.passes.synthesis.plugin import HighLevelSynthesisPlugin\n\nclass MyCliffordSynthesisPlugin(HighLevelSynthesisPlugin):\n    def run(self, high_level_object, coupling_map=None, target=None, qubits=None, **options):\n        if high_level_object.num_qubits <= 3:\n            return synth_clifford_bm(high_level_object)\n        return None",
+     "lang": "python",
+     "id": "c",
+     "size": 21
+    },
+    {
+     "type": "code",
+     "src": "[project.entry-points.\"qiskit.synthesis\"]\n\"clifford.my_clifford_synthesis\" = \"my_qiskit_plugin:MyCliffordSynthesisPlugin\"",
+     "lang": "text",
+     "title": "pyproject.toml",
+     "id": "t",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "4-8",
+     "id": "c",
+     "at": "hl"
+    },
+    {
+     "do": "show",
+     "id": "t",
+     "at": "ep"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "3.7",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre plugins.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tu algoritmo recibe un operador de Clifford y devuelve un circuito corto.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué tipo de plugin escribes?",
+    "options": [
+     "de etapa",
+     "de síntesis unitaria",
+     "de síntesis de alto nivel"
+    ],
+    "right": 2,
+    "why": "Correcto: los Clifford son objetos de alto nivel; tu plugin se registra como `clifford.<nombre>` en `qiskit.synthesis`.",
+    "wrong": [
+     "Un plugin de etapa reemplaza una etapa entera del transpilador.",
+     "La síntesis unitaria recibe una matriz, no un objeto Clifford.",
+     null
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "ia",
+   "tag": [
+    "3.7",
+    "Pases con inteligencia artificial"
+   ],
+   "say": "Por último, los pases de transpilación con inteligencia artificial, en beta. Sustituyen a pases tradicionales y suelen dar mejores resultados, con menos profundidad y menos CNOT, siendo mucho más rápidos que métodos exactos como los resolvedores de satisfacibilidad. Se ejecutan en tu computadora. [[inst]]Vienen en el paquete qiskit ibm transpiler. [[rout]]AIRouting hace layout y routing a la vez. Su layout mode puede ser keep, que respeta el layout anterior; improve, que lo usa como punto de partida; u optimize, el valor por defecto, que lo ignora. [[syn]]Y hay pases de síntesis: de Clifford y de funciones lineales hasta nueve qubits, de permutaciones de veintisiete, treinta y tres o sesenta y cinco qubits, y de redes de Pauli hasta seis.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "$ pip install qiskit-ibm-transpiler",
+     "lang": "sh",
+     "id": "s"
+    },
+    {
+     "type": "table",
+     "head": [
+      "Pase",
+      "Qué hace"
+     ],
+     "rows": [
+      [
+       "`AIRouting`",
+       "layout + routing · `layout_mode`: `keep`, `improve`, `optimize`"
+      ],
+      [
+       "`AICliffordSynthesis`",
+       "bloques H, S, CX · hasta 9 qubits"
+      ],
+      [
+       "`AILinearFunctionSynthesis`",
+       "bloques CX y SWAP · hasta 9 qubits"
+      ],
+      [
+       "`AIPermutationSynthesis`",
+       "bloques SWAP · 27, 33 o 65 qubits"
+      ],
+      [
+       "`AIPauliNetworkSynthesis`",
+       "H, S, SX, CX, rotaciones · hasta 6 qubits"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "rout"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "syn"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "syn",
+     "t": 1
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "syn",
+     "t": 2
+    },
+    {
+     "do": "item",
+     "i": 4,
+     "id": "t",
+     "at": "syn",
+     "t": 3
+    }
+   ]
+  },
+  {
+   "id": "ia2",
+   "tag": [
+    "3.7",
+    "Usar los pases de IA"
+   ],
+   "say": "La forma típica: primero AIRouting, [[col]]luego un pase de recolección, que junta bloques del tipo adecuado y de tamaño admitido, [[syn]]y después el de síntesis, que los re-sintetiza. Por defecto solo reemplaza un bloque si el nuevo tiene menos CNOT. [[sub]]La síntesis necesita que el bloque esté sobre un subgrafo conexo del mapa de acoplamiento; si no, avisa y lo deja igual. [[hib]]También existe generate ai pass manager, que combina los pases heurísticos de Qiskit con los de IA, con un nivel para cada parte. [[hilos]]Y los pases usan varios hilos: se ajusta con max threads o la variable AI TRANSPILER MAX THREADS.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit_ibm_transpiler.ai.routing import AIRouting\nfrom qiskit_ibm_transpiler.ai.collection import CollectLinearFunctions\nfrom qiskit_ibm_transpiler.ai.synthesis import AILinearFunctionSynthesis\nfrom qiskit_ibm_transpiler import generate_ai_pass_manager\n\nai_pm = PassManager([\n    AIRouting(backend=backend, optimization_level=3, layout_mode=\"optimize\", local_mode=True),\n    CollectLinearFunctions(),\n    AILinearFunctionSynthesis(backend=backend, local_mode=True),\n])\nhybrid = generate_ai_pass_manager(coupling_map=backend.coupling_map,\n    ai_optimization_level=3, optimization_level=3, ai_layout_mode=\"optimize\")",
+     "lang": "python",
+     "id": "c",
+     "norun": true,
+     "size": 21
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      7
+     ],
+     "id": "c"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      8
+     ],
+     "id": "c",
+     "at": "col"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      9
+     ],
+     "id": "c",
+     "at": "syn"
+    },
+    {
+     "do": "hl",
+     "range": "11-12",
+     "id": "c",
+     "at": "hib"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "3.7",
+    "Comprueba"
+   ],
+   "say": "Sobre el modo de layout.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tu circuito debe ejecutarse sí o sí en los qubits físicos 10 a 15, que ya fijaste.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué `layout_mode` usas en `AIRouting`?",
+    "options": [
+     "`keep`",
+     "`improve`",
+     "`optimize`"
+    ],
+    "right": 0,
+    "why": "Correcto: `keep` respeta el layout dado. Suele dar peores resultados porque tiene menos libertad, pero es lo que necesitas.",
+    "wrong": [
+     null,
+     "`improve` puede mover los qubits.",
+     "`optimize` ignora tu layout."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "3.7",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Hay plugins de etapa, de síntesis unitaria y de alto nivel. [[r2]]Se usan con los argumentos method y hls config. [[r3]]Se crean con una subclase y un entry point. [[r4]]Y los pases de IA mejoran routing y síntesis. Con esto termina la transpilación; en la Parte cuatro, las primitivas.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "tres tipos de plugin: etapa, síntesis unitaria, síntesis de alto nivel",
+      "usar: `*_method`, `unitary_synthesis_method`, `hls_config=HLSConfig(...)`",
+      "crear: subclase + entry point en `pyproject.toml`",
+      "IA: `AIRouting`, `AI*Synthesis`, `Collect*`, `generate_ai_pass_manager`"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "transpiler-plugins",
+  "create-transpiler-plugin",
+  "ai-transpiler-passes"
+ ],
+ "practice": [
+  "Transpila un `efficient_su2(20)` para `FakeSherbrooke` con `routing_method` `sabre`, `lookahead` y `basic`, y compara los SWAP.",
+  "Instala `qiskit-ibm-transpiler` y prueba `generate_ai_pass_manager` con el mapa de acoplamiento de `FakeFez`.",
+  "Guías originales: [transpiler-plugins](https://quantum.cloud.ibm.com/docs/en/guides/transpiler-plugins) · [create-transpiler-plugin](https://quantum.cloud.ibm.com/docs/en/guides/create-transpiler-plugin) · [ai-transpiler-passes](https://quantum.cloud.ibm.com/docs/en/guides/ai-transpiler-passes)"
+ ],
+ "next": "p4-primitivas",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

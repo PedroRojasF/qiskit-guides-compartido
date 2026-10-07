@@ -1,0 +1,217 @@
+{
+ "tres": {
+  "dur": 32.88,
+  "marks": {
+   "est": 3.425,
+   "sam": 11.096,
+   "exe": 14.663
+  },
+  "cues": [
+   [
+    0.107,
+    "IBM ofrece tres primitivas."
+   ],
+   [
+    3.425,
+    "Estimator calcula valores esperados y trae técnicas de supresión y mitigación de errores incorporadas."
+   ],
+   [
+    11.096,
+    "Sampler muestrea registros de salida."
+   ],
+   [
+    14.663,
+    "Y Executor, en beta, es de más bajo nivel: muestrea, pero no toma decisiones por ti; a cambio, te da control y transparencia totales, y capacidades que Sampler no tiene, como más grupos de twirling o twirling con puertas fraccionales."
+   ]
+  ]
+ },
+ "cliente": {
+  "dur": 40.872,
+  "marks": {
+   "ventajas": 18.073,
+   "import": 25.235
+  },
+  "cues": [
+   [
+    0.107,
+    "Un cambio importante en qiskit ibm runtime cero punto cincuenta: Sampler y Estimator pasaron a ser primitivas del lado del cliente."
+   ],
+   [
+    10.19,
+    "Hacen la mayor parte del pre y posprocesamiento en tu computadora y delegan la ejecución en Executor."
+   ],
+   [
+    18.073,
+    "Eso da más transparencia, depuración más rápida, y permite probar la mitigación en local."
+   ],
+   [
+    25.235,
+    "Para usarlas, solo cambia la importación: de qiskit ibm runtime import Estimator, a qiskit ibm runtime punto executor estimator import Estimator."
+   ],
+   [
+    37.421,
+    "Las opciones vienen de options models."
+   ]
+  ]
+ },
+ "estructura": {
+  "dur": 32.232,
+  "marks": {
+   "formato": 14.479,
+   "unset": 20.395
+  },
+  "cues": [
+   [
+    0.107,
+    "Las opciones tienen estructura de árbol."
+   ],
+   [
+    3.595,
+    "Las más usadas, como resilience level, están en el primer nivel; las demás se agrupan en categorías, como execution o dynamical decoupling."
+   ],
+   [
+    14.479,
+    "Se escriben así: options punto opción punto subopción igual a valor."
+   ],
+   [
+    20.395,
+    "Si no fijas una opción, recibe un valor especial, Unset, y se usa el valor por defecto del servidor: así el comportamiento no depende de tu versión del código."
+   ]
+  ]
+ },
+ "formas": {
+  "dur": 32.664,
+  "marks": {
+   "clase": 2.42,
+   "dict": 7.501,
+   "attr": 17.918,
+   "update": 22.857,
+   "asdict": 26.863
+  },
+  "cues": [
+   [
+    0.107,
+    "Hay cuatro formas."
+   ],
+   [
+    2.42,
+    "Con una instancia de la clase de opciones, al crear la primitiva."
+   ],
+   [
+    7.501,
+    "Con un diccionario, también al crearla."
+   ],
+   [
+    11.153,
+    "En ambos casos la primitiva copia las opciones: cambiar después el original no le afecta."
+   ],
+   [
+    17.918,
+    "Asignando atributos después de crearla, con autocompletado."
+   ],
+   [
+    22.857,
+    "O con update, para cambiar varias de golpe."
+   ],
+   [
+    26.863,
+    "Y como options es una dataclass, asdict la convierte en diccionario."
+   ]
+  ]
+ },
+ "q1": {
+  "dur": 2.904,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Sobre la copia de opciones."
+   ]
+  ]
+ },
+ "dirigida": {
+  "dur": 54.936,
+  "marks": {
+   "pasos": 15.526,
+   "build": 29.736,
+   "run": 36.883,
+   "post": 41.794,
+   "nl": 47.979
+  },
+  "cues": [
+   [
+    0.107,
+    "Sampler y Estimator son ideales para desarrollar algoritmos, pero los científicos que hacen experimentos a gran escala necesitan más control."
+   ],
+   [
+    10.502,
+    "Para ellos existe el modelo de ejecución dirigida, en beta."
+   ],
+   [
+    15.526,
+    "El flujo tiene cuatro pasos."
+   ],
+   [
+    18.47,
+    "Agrupas instrucciones en cajas y les pones anotaciones, que expresan la intención, por ejemplo twirling, sin generar todavía las variantes del circuito."
+   ],
+   [
+    29.736,
+    "Construyes un circuito plantilla y un samplex, que describe cómo aleatorizar sus parámetros."
+   ],
+   [
+    36.883,
+    "Executor genera y ejecuta las variantes en el servidor."
+   ],
+   [
+    41.794,
+    "Y tú posprocesas: postselección, extrapolación, lo que necesites."
+   ],
+   [
+    47.979,
+    "Si hace falta, NoiseLearnerV3 aprende primero el modelo de ruido de las capas."
+   ]
+  ]
+ },
+ "q2": {
+  "dur": 2.52,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Elige la herramienta."
+   ]
+  ]
+ },
+ "cierre": {
+  "dur": 24.816,
+  "marks": {
+   "r1": 1.868,
+   "r2": 7.657,
+   "r3": 13.997,
+   "r4": 19.744
+  },
+  "cues": [
+   [
+    0.107,
+    "Resumen."
+   ],
+   [
+    1.868,
+    "Estimator, Sampler y Executor, de más alto a más bajo nivel."
+   ],
+   [
+    7.657,
+    "Desde la cero punto cincuenta, Sampler y Estimator corren del lado del cliente."
+   ],
+   [
+    13.997,
+    "Las opciones se fijan con clase, diccionario, atributos o update."
+   ],
+   [
+    19.744,
+    "Y la ejecución dirigida te da control total sobre la mitigación."
+   ]
+  ]
+ }
+}

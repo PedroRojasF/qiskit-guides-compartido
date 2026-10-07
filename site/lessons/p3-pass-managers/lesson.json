@@ -1,0 +1,429 @@
+{
+ "id": "p3-pass-managers",
+ "part": "Parte III · Transpilación",
+ "section": "3.5",
+ "title": "Pass managers y desacoplamiento dinámico",
+ "summary": "Crear pass managers propios, pass managers por etapas, modificar uno prediseñado y construir un pass manager de desacoplamiento dinámico.",
+ "goals": [
+  "crear un `PassManager` con pases de `qiskit.transpiler.passes`",
+  "construir y modificar un `StagedPassManager`",
+  "añadir desacoplamiento dinámico a un circuito transpilado"
+ ],
+ "beats": [
+  {
+   "id": "propio",
+   "tag": [
+    "3.5",
+    "Un pass manager propio"
+   ],
+   "say": "El módulo qiskit punto transpiler punto passes tiene muchísimos pases para armar tu propio pass manager. Basta con pasarle una lista. [[ej]]Este junta las puertas de dos qubits que van seguidas en bloques, [[cons]]los consolida en una sola unitaria, [[syn]]y la sintetiza en las puertas RX, RY y RXX, las de un computador de iones atrapados, por ejemplo. [[res]]Aplicado a una Hadamard seguida de dos CX, el resultado solo contiene esas tres puertas.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit.transpiler import PassManager\nfrom qiskit.transpiler.passes import Collect2qBlocks, ConsolidateBlocks, UnitarySynthesis\n\nbasis_gates = [\"rx\", \"ry\", \"rxx\"]\ntranslate = PassManager([\n    Collect2qBlocks(),\n    ConsolidateBlocks(basis_gates=basis_gates),\n    UnitarySynthesis(basis_gates),\n])\ncircuit = QuantumCircuit(2)\ncircuit.h(0)\ncircuit.cx(0, 1)\ncircuit.cx(1, 0)\nprint(sorted(translate.run(circuit).count_ops()))",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    },
+    {
+     "type": "code",
+     "src": "['rx', 'rxx', 'ry']",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      7
+     ],
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      8
+     ],
+     "id": "c",
+     "at": "cons"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      9
+     ],
+     "id": "c",
+     "at": "syn"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    }
+   ]
+  },
+  {
+   "id": "staged",
+   "tag": [
+    "3.5",
+    "Un pass manager por etapas"
+   ],
+   "say": "Un StagedPassManager está un nivel más arriba: en vez de pases, contiene pass managers, uno por etapa. [[ej]]Aquí declaramos dos etapas, init y translation. [[init]]init sintetiza unitarias de tres o más qubits y desarma las puertas grandes; [[trans]]translation es el pass manager que acabamos de crear. [[lim]]No hay límite al número de etapas.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.transpiler import StagedPassManager\nfrom qiskit.transpiler.passes import Unroll3qOrMore\n\ninit = PassManager([UnitarySynthesis(basis_gates, min_qubits=3), Unroll3qOrMore()])\nstaged_pm = StagedPassManager(\n    stages=[\"init\", \"translation\"], init=init, translation=translate)",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "init",
+       "s": "síntesis ≥3 qubits · Unroll3qOrMore"
+      },
+      {
+       "t": "translation",
+       "s": "bloques → rx, ry, rxx"
+      }
+     ],
+     "id": "f",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "5-6",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "f",
+     "at": "ej"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      4
+     ],
+     "id": "c",
+     "at": "init"
+    },
+    {
+     "do": "step",
+     "i": 0,
+     "id": "f",
+     "at": "init"
+    },
+    {
+     "do": "step",
+     "i": 1,
+     "id": "f",
+     "at": "trans"
+    }
+   ]
+  },
+  {
+   "id": "modificar",
+   "tag": [
+    "3.5",
+    "Modificar un pass manager prediseñado"
+   ],
+   "say": "Otra forma muy útil: partir de uno prediseñado y cambiar algunas etapas. [[sub]]Cada etapa tiene además una etapa previa y otra posterior, pre y post, vacías por defecto: hay dieciocho huecos en total. [[ej]]Aquí añadimos una etapa pre layout con InverseCancellation, que elimina pares de puertas inversas, como T seguida de T daga, antes de elegir el layout. [[gen]]Las funciones generadoras de etapas, como generate embed passmanager, ayudan a construir etapas comunes.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "import numpy as np\nfrom qiskit.circuit.library import HGate, RXGate, PhaseGate, TGate, TdgGate\nfrom qiskit.transpiler import generate_preset_pass_manager\nfrom qiskit.transpiler.passes import InverseCancellation\nfrom qiskit_ibm_runtime.fake_provider import FakeSherbrooke\n\npass_manager = generate_preset_pass_manager(3, FakeSherbrooke())\npass_manager.pre_layout = PassManager([InverseCancellation([\n    HGate(),\n    (RXGate(np.pi / 4), RXGate(-np.pi / 4)),\n    (PhaseGate(np.pi / 4), PhaseGate(-np.pi / 4)),\n    (TGate(), TdgGate()),\n])])\nprint(len(pass_manager.expanded_stages))",
+     "lang": "python",
+     "id": "c",
+     "size": 21
+    },
+    {
+     "type": "code",
+     "src": "18",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "o",
+     "at": "sub"
+    },
+    {
+     "do": "hl",
+     "range": "8-13",
+     "id": "c",
+     "at": "ej"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "3.5",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre etapas.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Quieres un pase que se ejecute justo después de elegir el layout y antes de insertar SWAP.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué atributo asignas?",
+    "options": [
+     "`pre_layout`",
+     "`post_layout`",
+     "`pre_init`",
+     "`post_routing`"
+    ],
+    "right": 1,
+    "why": "Correcto: `post_layout` corre tras la etapa de layout y antes de `pre_routing` y `routing`.",
+    "wrong": [
+     "`pre_layout` va antes de elegir el layout.",
+     null,
+     "`pre_init` es lo primero de todo.",
+     "`post_routing` va después de insertar SWAP."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "dd",
+   "tag": [
+    "3.5",
+    "Desacoplamiento dinámico"
+   ],
+   "say": "Ahora un ejemplo avanzado: un pass manager que aplica desacoplamiento dinámico, una técnica de supresión de errores. [[idea]]Mientras un qubit espera ocioso, el entorno lo va desfasando. Si le aplicamos una secuencia de pulsos que en total es la identidad, por ejemplo X, Y, X, Y, lo volteamos sobre la esfera de Bloch y el efecto del ruido se cancela, como los pulsos de reenfoque en resonancia magnética nuclear. [[cuando]]Funciona mejor cuando hay mucho tiempo ocioso: qubits esperando mientras otros trabajan.",
+   "scene": [
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "espera"
+      },
+      {
+       "t": "X",
+       "color": "blue"
+      },
+      {
+       "t": "espera"
+      },
+      {
+       "t": "Y",
+       "color": "violet"
+      },
+      {
+       "t": "espera"
+      },
+      {
+       "t": "X",
+       "color": "blue"
+      },
+      {
+       "t": "espera"
+      },
+      {
+       "t": "Y",
+       "color": "violet"
+      },
+      {
+       "t": "espera"
+      }
+     ],
+     "id": "f"
+    },
+    {
+     "type": "math",
+     "tex": "XYXY=\\mathbb 1\\ \\ (\\text{salvo fase})",
+     "id": "m",
+     "hidden": true,
+     "size": 40
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "m",
+     "at": "idea"
+    },
+    {
+     "do": "step",
+     "i": [
+      0,
+      2,
+      4,
+      6,
+      8
+     ],
+     "id": "f",
+     "at": "cuando"
+    }
+   ]
+  },
+  {
+   "id": "ddcode",
+   "tag": [
+    "3.5",
+    "El pass manager de DD"
+   ],
+   "say": "Paso a paso. [[tr]]Primero transpilamos el circuito al backend: el desacoplamiento se añade después de transpilar y programar los tiempos. [[y]]La puerta Y no es base de Sherbrooke, así que hay que añadirla al Target con la duración y el error de la X, que son iguales. [[pm]]Luego, un PassManager con dos pases: ALAPScheduleAnalysis, que calcula cuándo empieza cada instrucción, y PadDynamicalDecoupling, que llena las esperas con la secuencia. [[bt]]Por último, BasisTranslator convierte las Y en puertas base. El circuito queda listo, con instrucciones Delay explícitas.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.circuit.library import XGate, YGate, efficient_su2\nfrom qiskit.transpiler import InstructionProperties\nfrom qiskit.transpiler.passes import BasisTranslator\nfrom qiskit.transpiler.passes.scheduling import ALAPScheduleAnalysis, PadDynamicalDecoupling\nfrom qiskit.circuit.equivalence_library import SessionEquivalenceLibrary as sel\n\ntarget = FakeSherbrooke().target\nbasis_gates = list(target.operation_names)\nqc = efficient_su2(12, entanglement=\"circular\", reps=1)\nqc_t = generate_preset_pass_manager(1, target=target, seed_transpiler=12345).run(qc)\nqc_t.assign_parameters(np.random.default_rng(1234).uniform(-np.pi, np.pi, qc_t.num_parameters), inplace=True)\n\ntarget.add_instruction(YGate(), {(q,): InstructionProperties(\n    duration=target[\"x\"][(q,)].duration, error=target[\"x\"][(q,)].error) for q in range(target.num_qubits)})\n\ndd_pm = PassManager([ALAPScheduleAnalysis(target=target),\n                     PadDynamicalDecoupling(target=target, dd_sequence=[XGate(), YGate(), XGate(), YGate()])])\nqc_dd = BasisTranslator(sel, basis_gates)(dd_pm.run(qc_t))\nprint(\"delay\" in qc_dd.count_ops(), \"y\" in qc_dd.count_ops())",
+     "lang": "python",
+     "id": "c",
+     "size": 17
+    },
+    {
+     "type": "code",
+     "src": "True False",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "8-10",
+     "id": "c",
+     "at": "tr"
+    },
+    {
+     "do": "hl",
+     "range": "12-13",
+     "id": "c",
+     "at": "y"
+    },
+    {
+     "do": "hl",
+     "range": "15-16",
+     "id": "c",
+     "at": "pm"
+    },
+    {
+     "do": "hl",
+     "range": "17-18",
+     "id": "c",
+     "at": "bt"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "bt",
+     "t": 2
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "3.5",
+    "Comprueba"
+   ],
+   "say": "Sobre el orden de los pases.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Aplicas `PadDynamicalDecoupling` a un circuito abstracto, antes de transpilar.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué problema hay?",
+    "options": [
+     "ninguno",
+     "aún no se sabe cuánto esperará cada qubit: falta transpilar y programar tiempos",
+     "el DD solo funciona en simuladores"
+    ],
+    "right": 1,
+    "why": "Correcto: las esperas dependen del layout, del routing y de la duración real de cada puerta; por eso el DD va al final.",
+    "wrong": [
+     "Sin tiempos no hay esperas que llenar.",
+     null,
+     "El DD se usa precisamente en hardware real."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "3.5",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Un PassManager es una lista de pases. [[r2]]Un StagedPassManager organiza pass managers por etapas. [[r3]]Puedes sustituir cualquier etapa de uno prediseñado, incluidas las pre y post. [[r4]]Y el desacoplamiento dinámico se añade al final, con análisis de tiempos y relleno.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "`PassManager([pases])` y `.run(qc)`",
+      "`StagedPassManager(stages=[…], init=…, translation=…)`",
+      "sustituir etapas de un preset: `pm.pre_layout = …`",
+      "DD: `ALAPScheduleAnalysis` + `PadDynamicalDecoupling` (+ `BasisTranslator`)"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "transpile-with-pass-managers",
+  "dynamical-decoupling-pass-manager"
+ ],
+ "practice": [
+  "Dibuja `qc_dd` con `timeline_drawer(qc_dd, idle_wires=False, target=target)` y busca las secuencias XYXY.",
+  "Prueba la secuencia `[XGate(), XGate()]` y compara cuántas puertas añade frente a XY4.",
+  "Guías originales: [transpile-with-pass-managers](https://quantum.cloud.ibm.com/docs/en/guides/transpile-with-pass-managers) · [dynamical-decoupling-pass-manager](https://quantum.cloud.ibm.com/docs/en/guides/dynamical-decoupling-pass-manager)"
+ ],
+ "next": "p3-pases-propios",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

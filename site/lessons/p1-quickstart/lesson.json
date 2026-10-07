@@ -1,0 +1,744 @@
+{
+ "id": "p1-quickstart",
+ "part": "Parte I · Primeros pasos",
+ "section": "1.4",
+ "title": "Tu primer circuito: el estado de Bell",
+ "summary": "Construir, simular y graficar un estado entrelazado en pocas líneas, sin cuenta ni clave.",
+ "goals": [
+  "construir un circuito con `QuantumCircuit`, `h`, `cx` y `measure_all`",
+  "ejecutarlo con `StatevectorSampler` y leer los conteos",
+  "interpretar el resultado como una firma del entrelazamiento"
+ ],
+ "beats": [
+  {
+   "id": "intro",
+   "tag": [
+    "1.4",
+    "En menos de dos minutos"
+   ],
+   "say": "Vamos a construir tu primer circuito cuántico, en tu computadora, sin cuenta ni clave de acceso. [[que]]Será un estado de Bell: dos qubits entrelazados. [[req]]Solo necesitas qiskit, matplotlib y el extra de visualización.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Tu primer circuito",
+     "style": "title"
+    },
+    {
+     "type": "text",
+     "text": "un estado de Bell: dos qubits entrelazados",
+     "style": "subtitle",
+     "id": "s",
+     "hidden": true
+    },
+    {
+     "type": "code",
+     "src": "$ pip install qiskit matplotlib \"qiskit[visualization]\"",
+     "lang": "sh",
+     "id": "c",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "s",
+     "at": "que"
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "req"
+    }
+   ]
+  },
+  {
+   "id": "construir",
+   "tag": [
+    "1.4",
+    "Construir el circuito"
+   ],
+   "say": "Importamos QuantumCircuit [[nuevo]]y creamos un circuito con dos qubits. Ambos empiezan en el estado cero. [[h]]Aplicamos una Hadamard al qubit cero, [[cx]]luego una CNOT con el qubit cero como control y el uno como objetivo, [[m]]y medimos todos los qubits con measure all, que además añade una barrera y un registro clásico llamado meas.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "code",
+       "src": "from qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()\n\nsampler = StatevectorSampler()\nresult = sampler.run([qc], shots=1024).result()\nprint(result[0].data.meas.get_counts())",
+       "lang": "python",
+       "id": "c",
+       "reveal": true,
+       "norun": true,
+       "size": 22,
+       "maxw": 620
+      },
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "h",
+         "q": [
+          0
+         ],
+         "hidden": true
+        },
+        {
+         "g": "cx",
+         "q": [
+          0,
+          1
+         ],
+         "hidden": true
+        },
+        {
+         "g": "barrier",
+         "q": [],
+         "hidden": true
+        },
+        {
+         "g": "measure",
+         "q": [
+          0
+         ],
+         "c": 0,
+         "hidden": true
+        },
+        {
+         "g": "measure",
+         "q": [
+          1
+         ],
+         "c": 1,
+         "hidden": true
+        }
+       ],
+       "clbits": 2,
+       "creg": "meas",
+       "id": "q",
+       "hidden": true,
+       "maxw": 480
+      }
+     ],
+     "gap": 30
+    }
+   ],
+   "actions": [
+    {
+     "do": "lines",
+     "to": 4,
+     "id": "c",
+     "at": "nuevo"
+    },
+    {
+     "do": "show",
+     "id": "q",
+     "at": "nuevo"
+    },
+    {
+     "do": "lines",
+     "to": 5,
+     "id": "c",
+     "at": "h"
+    },
+    {
+     "do": "gate",
+     "i": 0,
+     "id": "q",
+     "at": "h"
+    },
+    {
+     "do": "lines",
+     "to": 6,
+     "id": "c",
+     "at": "cx"
+    },
+    {
+     "do": "gate",
+     "i": 1,
+     "id": "q",
+     "at": "cx"
+    },
+    {
+     "do": "lines",
+     "to": 7,
+     "id": "c",
+     "at": "m"
+    },
+    {
+     "do": "gate",
+     "i": [
+      2,
+      3,
+      4
+     ],
+     "id": "q",
+     "at": "m"
+    }
+   ]
+  },
+  {
+   "id": "estado",
+   "tag": [
+    "1.4",
+    "Qué estado se prepara"
+   ],
+   "say": "Sigamos el estado paso a paso. [[ini]]Al principio, cero cero. [[h]]La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos. [[cx]]La CNOT invierte el qubit uno solo cuando el qubit cero vale uno. El término con el cero se queda igual y el término con el uno se convierte en uno uno. [[bell]]El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos. Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados. [[orden]]Un detalle de notación: Qiskit escribe el qubit cero a la derecha. Lo verás en una lección propia.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      }
+     ],
+     "id": "q"
+    },
+    {
+     "type": "math",
+     "tex": "|00\\rangle",
+     "id": "a",
+     "size": 40
+    },
+    {
+     "type": "math",
+     "tex": "\\xrightarrow{H_0}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|0\\gold{1}\\rangle\\big)",
+     "id": "b",
+     "hidden": true,
+     "size": 40
+    },
+    {
+     "type": "math",
+     "tex": "\\xrightarrow{CX}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|\\gold{11}\\rangle\\big)",
+     "id": "c",
+     "hidden": true,
+     "size": 40,
+     "color": "fg"
+    },
+    {
+     "type": "text",
+     "text": "en $|q_1q_0\\rangle$ el qubit 0 va a la **derecha**",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "cursor",
+     "col": 0,
+     "id": "q",
+     "at": "h"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "h"
+    },
+    {
+     "do": "cursor",
+     "col": 1,
+     "id": "q",
+     "at": "cx"
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "cx"
+    },
+    {
+     "do": "emph",
+     "id": "c",
+     "at": "bell"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "orden"
+    }
+   ]
+  },
+  {
+   "id": "ejecutar",
+   "tag": [
+    "1.4",
+    "Ejecutar con un Sampler"
+   ],
+   "say": "Para ejecutarlo usamos una primitiva. StatevectorSampler simula el circuito de forma exacta y luego toma muestras, como si fuera un computador cuántico ideal. [[run]]run recibe una lista de circuitos, aquí uno solo, y el número de disparos: mil veinticuatro. result espera a que termine. [[leer]]Leer el resultado es una cadena: el primer elemento de la lista, punto data, [[meas]]punto meas, que es el registro creado por measure all, [[counts]]y get counts, que cuenta cuántas veces salió cada cadena de bits.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()\n\nsampler = StatevectorSampler()\nresult = sampler.run([qc], shots=1024).result()\nprint(result[0].data.meas.get_counts())",
+     "lang": "python",
+     "id": "c",
+     "size": 24
+    },
+    {
+     "type": "flow",
+     "steps": [
+      {
+       "t": "result[0]",
+       "s": "un circuito"
+      },
+      {
+       "t": ".data",
+       "s": "sus datos"
+      },
+      {
+       "t": ".meas",
+       "s": "el registro"
+      },
+      {
+       "t": ".get_counts()",
+       "s": "conteos"
+      }
+     ],
+     "id": "f",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      9,
+      10
+     ],
+     "id": "c",
+     "at": "run"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      11
+     ],
+     "id": "c",
+     "at": "leer"
+    },
+    {
+     "do": "show",
+     "id": "f",
+     "at": "leer"
+    },
+    {
+     "do": "step",
+     "i": [
+      0,
+      1
+     ],
+     "id": "f",
+     "at": "leer"
+    },
+    {
+     "do": "step",
+     "i": 2,
+     "id": "f",
+     "at": "meas"
+    },
+    {
+     "do": "step",
+     "i": 3,
+     "id": "f",
+     "at": "counts"
+    }
+   ]
+  },
+  {
+   "id": "resultado",
+   "tag": [
+    "1.4",
+    "El resultado"
+   ],
+   "say": "Esto es lo que imprime. [[mitad]]Casi la mitad de las veces sale cero cero, y la otra mitad, uno uno. [[nunca]]Nunca sale cero uno ni uno cero. [[azar]]Los números exactos cambian en cada ejecución, porque son muestras aleatorias.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "{'11': 510, '00': 514}",
+     "lang": "out",
+     "id": "o"
+    },
+    {
+     "type": "hist",
+     "data": [
+      [
+       "00",
+       514
+      ],
+      [
+       "01",
+       0
+      ],
+      [
+       "10",
+       0
+      ],
+      [
+       "11",
+       510
+      ]
+     ],
+     "id": "h",
+     "grow": true,
+     "ymax": 600,
+     "color": "blue"
+    },
+    {
+     "type": "text",
+     "text": "cada ejecución da números un poco distintos",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "grow",
+     "dur": 1.4,
+     "id": "h",
+     "at": "mitad"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "azar"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "1.4",
+    "Comprueba"
+   ],
+   "say": "Piensa en el estado de Bell.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "\\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|11\\rangle\\big)",
+     "size": 46
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "numeric",
+    "prompt": "Si mides solo el qubit 0, ¿con qué probabilidad sale 1?",
+    "answer": 0.5,
+    "why": "Correcto: 1/2. Cada qubit por separado es completamente aleatorio; lo que no es aleatorio es la relación entre los dos.",
+    "tol": 0.001,
+    "hint": "Suma las probabilidades de los resultados en los que el qubit 0 vale 1.",
+    "solution": [
+     "El qubit 0 vale 1 solo en $|11\\rangle$, con probabilidad $|1/\\sqrt2|^2=1/2$."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "entrelazamiento",
+   "tag": [
+    "1.4",
+    "La firma del entrelazamiento"
+   ],
+   "say": "Este resultado es una firma del entrelazamiento. [[cada]]Cada qubit por separado es una moneda perfecta: cero o uno, mitad y mitad. [[juntos]]Pero los dos siempre coinciden. Si sabes lo que salió en uno, sabes lo que saldrá en el otro. [[clas]]Una correlación así podría imitarse con monedas trucadas. Lo que no se puede imitar clásicamente aparece cuando se mide en otras bases, y lo verás con Estimator.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "box",
+       "kind": "def",
+       "title": "Cada qubit",
+       "body": [
+        {
+         "type": "text",
+         "text": "0 o 1 al azar, 50 % · 50 %",
+         "style": "body"
+        }
+       ],
+       "id": "a",
+       "hidden": true
+      },
+      {
+       "type": "box",
+       "kind": "idea",
+       "title": "Los dos juntos",
+       "body": [
+        {
+         "type": "text",
+         "text": "siempre iguales: 00 o 11",
+         "style": "body"
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 26
+    },
+    {
+     "type": "text",
+     "text": "medir en otras bases (por ejemplo $\\langle XX\\rangle$) revela lo que ninguna moneda clásica imita",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "a",
+     "at": "cada"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "juntos"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "clas"
+    }
+   ]
+  },
+  {
+   "id": "histograma",
+   "tag": [
+    "1.4",
+    "Graficar"
+   ],
+   "say": "Para ver un histograma, importa plot histogram de qiskit punto visualization y pásale los conteos. [[plt]]En un cuaderno aparece solo; en un programa normal, necesitas además matplotlib punto pyplot y plt punto show.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.visualization import plot_histogram\n\ncounts = result[0].data.meas.get_counts()\nplot_histogram(counts)\n# fuera de Jupyter:\n# import matplotlib.pyplot as plt\n# plt.show()",
+     "lang": "python",
+     "id": "c"
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "5-7",
+     "id": "c",
+     "at": "plt"
+    }
+   ]
+  },
+  {
+   "id": "ghz",
+   "tag": [
+    "1.4",
+    "Experimenta: tres qubits"
+   ],
+   "say": "Ahora experimenta. Cambia a tres qubits [[cx]]y añade una segunda CNOT, del qubit uno al dos. [[res]]Las mediciones dan solo cero cero cero y uno uno uno: los tres qubits quedaron entrelazados. Es un estado GHZ.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "qc = QuantumCircuit(3)\nqc.h(0)\nqc.cx(0, 1)\nqc.cx(1, 2)\nqc.measure_all()\nprint(StatevectorSampler().run([qc]).result()[0].data.meas.get_counts())",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "circuit",
+     "qubits": 3,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        1,
+        2
+       ],
+       "hidden": true
+      }
+     ],
+     "id": "q"
+    },
+    {
+     "type": "code",
+     "src": "{'111': 513, '000': 511}",
+     "lang": "out",
+     "id": "o",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "gate",
+     "i": 2,
+     "id": "q",
+     "at": "cx"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      4
+     ],
+     "id": "c",
+     "at": "cx"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "1.4",
+    "Comprueba"
+   ],
+   "say": "Otro experimento: vuelve al circuito de Bell y, justo antes de medir, añade una X sobre el qubit uno.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "x",
+       "q": [
+        1
+       ]
+      },
+      {
+       "g": "barrier",
+       "q": []
+      },
+      {
+       "g": "measure",
+       "q": [
+        0
+       ],
+       "c": 0
+      },
+      {
+       "g": "measure",
+       "q": [
+        1
+       ],
+       "c": 1
+      }
+     ],
+     "clbits": 2,
+     "creg": "meas"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué cadenas de bits aparecen ahora?",
+    "options": [
+     "`'00'` y `'11'`",
+     "`'01'` y `'10'`",
+     "solo `'10'`",
+     "las cuatro, por igual"
+    ],
+    "right": 1,
+    "why": "Correcto: la X invierte el qubit 1, que es el bit de la **izquierda**: $00\\to10$ y $11\\to01$. Siguen anticorrelacionados al 50 %.",
+    "wrong": [
+     "La X cambia el qubit 1 en ambos términos.",
+     null,
+     "El qubit 0 sigue siendo aleatorio.",
+     "Los dos qubits siguen correlacionados: solo cambia cuál correlación."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "1.4",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]QuantumCircuit con h, cx y measure all construye un estado de Bell. [[r2]]StatevectorSampler lo ejecuta localmente, sin cuenta. [[r3]]Los conteos se leen con result, data, el nombre del registro y get counts. [[r4]]Y la correlación perfecta, cero cero o uno uno, es la firma del entrelazamiento. En la próxima lección, una herramienta gráfica para hacer lo mismo sin código: Composer.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "`QuantumCircuit(2)` · `h(0)` · `cx(0, 1)` · `measure_all()`",
+      "`StatevectorSampler().run([qc], shots=1024)`",
+      "`result[0].data.meas.get_counts()`",
+      "solo `00` y `11`: entrelazamiento"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "quick-start"
+ ],
+ "practice": [
+  "Prepara el estado $(|01\\rangle+|10\\rangle)/\\sqrt2$ con una X adicional y comprueba los conteos.",
+  "Generaliza a $n$ qubits con un bucle `for` y mide hasta $n=10$. ¿Cambia el tiempo de simulación?",
+  "Guías originales: [quick-start](https://quantum.cloud.ibm.com/docs/en/guides/quick-start)"
+ ],
+ "next": "p1-composer",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

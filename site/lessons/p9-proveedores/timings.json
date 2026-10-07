@@ -1,0 +1,159 @@
+{
+ "idea": {
+  "dur": 30.792,
+  "marks": {
+   "dos": 12.469,
+   "backends": 14.818,
+   "prim": 25.376
+  },
+  "cues": [
+   [
+    0.107,
+    "Qiskit no es solo para el hardware de IBM."
+   ],
+   [
+    3.977,
+    "Cualquier organización que ofrezca recursos cuánticos puede integrarlos en Qiskit, y llegar así a todos sus usuarios."
+   ],
+   [
+    12.469,
+    "Para eso necesita dos cosas: un servicio que dé acceso a los backends, con un objeto Target que describa conectividad, puertas base y número de qubits, para que los usuarios puedan transpilar; y una interfaz de ejecución, que implemente las primitivas de Qiskit."
+   ]
+  ]
+ },
+ "backend": {
+  "dur": 55.056,
+  "marks": {
+   "target": 9.582,
+   "metodos": 23.381,
+   "usar": 34.746,
+   "res": 43.507
+  },
+  "cues": [
+   [
+    0.107,
+    "El núcleo de un BackendV2 es su Target."
+   ],
+   [
+    3.821,
+    "Construyamos uno para un QPU imaginario de tres qubits en línea."
+   ],
+   [
+    9.582,
+    "Añadimos las puertas de un qubit, RZ, raíz de X y X, y la medición, en los tres qubits, con su error; y la CZ solo entre los pares cero uno y uno dos."
+   ],
+   [
+    23.381,
+    "La clase debe ofrecer el target, el máximo de circuitos por trabajo, las opciones por defecto y run, que en un proveedor real enviaría el trabajo a su servicio."
+   ],
+   [
+    34.746,
+    "Con eso, el transpilador de Qiskit ya funciona: el backend informa sus qubits, sus operaciones y su mapa de acoplamiento, y la CNOT se traduce a una CZ y rotaciones de un qubit."
+   ],
+   [
+    48.927,
+    "El transpilador eligió qubits vecinos, así que no hizo falta ningún SWAP."
+   ]
+  ]
+ },
+ "primitivas": {
+  "dur": 42.816,
+  "marks": {
+   "pasos": 12.837,
+   "datos": 24.598,
+   "ref": 32.51
+  },
+  "cues": [
+   [
+    0.107,
+    "Para ejecutar, el proveedor implementa las clases base de las primitivas."
+   ],
+   [
+    5.93,
+    "Un Estimator propio hereda de BaseEstimatorV2 y su run recibe PUBs y una precisión."
+   ],
+   [
+    12.837,
+    "Los pasos: fijar una precisión por defecto si no se da; validar el formato de los PUBs; crear un trabajo que herede de BasePrimitiveJob; y enviarlo al servicio."
+   ],
+   [
+    24.598,
+    "Los resultados se devuelven con las estructuras de Qiskit: DataBin, PubResult y PrimitiveResult."
+   ],
+   [
+    32.51,
+    "Como referencia, Qiskit incluye BackendSamplerV2 y BackendEstimatorV2, que convierten cualquier backend con run en primitivas."
+   ]
+  ]
+ },
+ "v1v2": {
+  "dur": 36.456,
+  "marks": {
+   "tabla": 16.092,
+   "cmap": 27.103
+  },
+  "cues": [
+   [
+    0.107,
+    "BackendV1 está obsoleto."
+   ],
+   [
+    2.972,
+    "Si usas solo qiskit ibm runtime y Aer, no tienes que hacer nada: ya usan BackendV2."
+   ],
+   [
+    10.756,
+    "Si usas otro proveedor que se actualizó, cambian algunos accesos."
+   ],
+   [
+    16.092,
+    "La idea: BackendV1 guardaba la información en configuration y properties; BackendV2 la concentra en el Target, con atributos planos."
+   ],
+   [
+    27.103,
+    "Un detalle: coupling map ahora devuelve un objeto CouplingMap, no una lista de aristas, y es solo una vista parcial del Target."
+   ]
+  ]
+ },
+ "q1": {
+  "dur": 2.304,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Migra una línea."
+   ]
+  ]
+ },
+ "cierre": {
+  "dur": 19.248,
+  "marks": {
+   "r1": 1.868,
+   "r2": 5.987,
+   "r3": 10.36,
+   "r4": 14.252
+  },
+  "cues": [
+   [
+    0.107,
+    "Resumen."
+   ],
+   [
+    1.868,
+    "Un proveedor ofrece un BackendV2 con su Target."
+   ],
+   [
+    5.987,
+    "La ejecución se expone implementando las primitivas."
+   ],
+   [
+    10.36,
+    "Los resultados usan las estructuras de Qiskit."
+   ],
+   [
+    14.252,
+    "Y al migrar de BackendV1, casi todo pasa al Target."
+   ]
+  ]
+ }
+}

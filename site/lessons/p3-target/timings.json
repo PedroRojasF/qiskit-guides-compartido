@@ -1,0 +1,243 @@
+{
+ "intro": {
+  "dur": 38.976,
+  "marks": {
+   "target": 10.629,
+   "backend": 21.371,
+   "mas": 26.976
+  },
+  "cues": [
+   [
+    0.107,
+    "Para producir un circuito ISA, el transpilador necesita saber cómo es el procesador."
+   ],
+   [
+    7.218,
+    "Esa información vive en dos lugares."
+   ],
+   [
+    10.629,
+    "El Target guarda todas las restricciones del dispositivo: sus instrucciones, la conectividad de sus qubits, y la información de tiempos y errores."
+   ],
+   [
+    21.371,
+    "El Backend contiene un Target, más la interfaz para enviar trabajos."
+   ],
+   [
+    26.976,
+    "Cuanta más información tenga el Target, mejor puede trabajar el transpilador, aunque como muchos algoritmos son estocásticos, no hay garantía de encontrar el mejor circuito."
+   ]
+  ]
+ },
+ "cm": {
+  "dur": 40.776,
+  "marks": {
+   "ej": 16.007,
+   "n0": 23.975,
+   "n1": 33.684
+  },
+  "cues": [
+   [
+    0.107,
+    "El mapa de acoplamiento es un grafo: dice qué qubits están conectados y pueden hacer puertas de dos qubits entre sí."
+   ],
+   [
+    8.478,
+    "A veces es dirigido, pero el transpilador siempre puede invertir una puerta añadiendo puertas de un qubit."
+   ],
+   [
+    16.007,
+    "Tomemos un circuito efficient su2 de doce qubits, con entrelazamiento circular: necesita un anillo."
+   ],
+   [
+    23.975,
+    "Con el nivel cero y solo el mapa de acoplamiento de Sherbrooke, el layout trivial pone los qubits en línea y hacen falta veintidós SWAP."
+   ],
+   [
+    33.684,
+    "Con el nivel uno, VF2 y Sabre encuentran un layout casi en anillo: solo dos SWAP."
+   ]
+  ]
+ },
+ "base": {
+  "dur": 47.64,
+  "marks": {
+   "sb": 13.771,
+   "mas": 28.235,
+   "otros": 33.486
+  },
+  "cues": [
+   [
+    0.107,
+    "Cada computador soporta un conjunto limitado de instrucciones, que debe ser universal: cualquier operación se puede descomponer en ellas."
+   ],
+   [
+    9.893,
+    "El pase BasisTranslator hace la traducción."
+   ],
+   [
+    13.771,
+    "Sherbrooke usa rz, sx y x en un qubit, y ECR, la puerta de resonancia cruzada con eco, en dos qubits: es la parte que entrelaza dentro de una CX."
+   ],
+   [
+    28.235,
+    "También admite delay, medición, reset y control de flujo."
+   ],
+   [
+    33.486,
+    "Otros procesadores usan CZ, como Fez, Torino o Heron."
+   ],
+   [
+    39.275,
+    "Puedes pasar basis gates como argumento, y las CX se descompondrán en ECR más puertas de un qubit."
+   ]
+  ]
+ },
+ "errores": {
+  "dur": 38.064,
+  "marks": {
+   "ecr": 6.609,
+   "uso": 22.532,
+   "from": 30.047
+  },
+  "cues": [
+   [
+    0.107,
+    "El Target también guarda las propiedades de cada instrucción en cada qubit o par de qubits."
+   ],
+   [
+    6.609,
+    "Para la ECR entre los qubits uno y cero: dura unos quinientos treinta y tres nanosegundos y tiene un error de cero coma siete por ciento."
+   ],
+   [
+    16.786,
+    "La ECR es direccional: uno cero no es lo mismo que cero uno."
+   ],
+   [
+    22.532,
+    "Con esa información, el pase VF2PostLayout elige los qubits físicos con menos error."
+   ],
+   [
+    30.047,
+    "Puedes construir un Target desde una configuración, con from configuration, y copiarle los errores de otro."
+   ]
+  ]
+ },
+ "q1": {
+  "dur": 2.856,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Una pregunta sobre el Target."
+   ]
+  ]
+ },
+ "propio": {
+  "dur": 50.976,
+  "marks": {
+   "prov": 9.015,
+   "backend": 14.79,
+   "target": 26.48,
+   "res": 36.897
+  },
+  "cues": [
+   [
+    0.107,
+    "Qiskit no depende del fabricante: cualquiera puede describir su propio dispositivo."
+   ],
+   [
+    6.539,
+    "Las piezas son tres."
+   ],
+   [
+    9.015,
+    "Un Provider, que entrega objetos backend y se ocupa de credenciales."
+   ],
+   [
+    14.79,
+    "Un BackendV2, con cuatro partes: un Target, max circuits, el máximo de circuitos por trabajo, un método run, y unas opciones por defecto."
+   ],
+   [
+    26.48,
+    "Y el Target, que se llena con add instruction: para cada puerta, un diccionario de los qubits donde está disponible, con su error y su duración."
+   ],
+   [
+    36.897,
+    "Una CX entre los qubits cero y dos, que no son vecinos en esta cadena, termina convertida en CZ y puertas de un qubit: el transpilador lo resolvió todo con la información del Target."
+   ]
+  ]
+ },
+ "multichip": {
+  "dur": 46.08,
+  "marks": {
+   "dentro": 10.969,
+   "entre": 15.342,
+   "ghz": 19.885,
+   "vis": 32.906
+  },
+  "cues": [
+   [
+    0.107,
+    "La guía original construye un backend más ambicioso: tres chips, cada uno con conectividad heavy hex, generada con la biblioteca rustworkx."
+   ],
+   [
+    10.969,
+    "Dentro de cada chip, la puerta de dos qubits es CZ; entre chips, ECR, en un solo enlace."
+   ],
+   [
+    19.885,
+    "Al transpilar un GHZ de cincuenta qubits, el resultado mezcla las dos puertas: doscientas cuatro CZ y ocho ECR, con muchos SWAP para cruzar entre chips."
+   ],
+   [
+    32.906,
+    "plot gate map y plot circuit layout dibujan estos dispositivos y qué qubits usó el circuito."
+   ],
+   [
+    39.657,
+    "Y con rustworkx puedes inventar cualquier geometría, como un toro de veinte por veinte."
+   ]
+  ]
+ },
+ "q2": {
+  "dur": 2.952,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Una pregunta sobre backends."
+   ]
+  ]
+ },
+ "cierre": {
+  "dur": 22.176,
+  "marks": {
+   "r1": 1.868,
+   "r2": 6.001,
+   "r3": 11.733,
+   "r4": 16.163
+  },
+  "cues": [
+   [
+    0.107,
+    "Resumen."
+   ],
+   [
+    1.868,
+    "Un backend es un Target más la forma de ejecutar."
+   ],
+   [
+    6.001,
+    "El Target describe instrucciones, conectividad, errores y tiempos."
+   ],
+   [
+    11.733,
+    "El mapa de acoplamiento decide cuántos SWAP harán falta."
+   ],
+   [
+    16.163,
+    "Y con add instruction puedes describir cualquier dispositivo, real o imaginario."
+   ]
+  ]
+ }
+}

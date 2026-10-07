@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qiskit · Guías</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="app.css">
+<script src="theme.js"></script>
+</head>
+<body>
+<header class="bar"><a class="brand" href="index.html">Qiskit <span>·</span> Guías</a><div style="flex:1"></div><button class="tool theme-btn"></button></header>
+<main class="course">
+  <h1>Qiskit e IBM Quantum, de principio a fin</h1>
+  <p class="lead">Lecciones animadas y narradas, en español, que recorren todas las guías de la documentación de IBM Quantum:
+    circuitos, transpilación, primitivas, ruido, ejecución en hardware real, Serverless, Functions y administración.
+    Todo el código se ejecutó con Qiskit 2.5 antes de publicarse. Al final de cada lección hay ejercicios y enlaces a las guías originales.</p>
+  <div id="parts"></div>
+  <p class="extra">Contenido basado en las <a href="https://quantum.cloud.ibm.com/docs/en/guides">guías de IBM Quantum</a> (CC BY-SA 4.0).
+    Atajos en las lecciones: espacio (pausa), ← → (pasos), C (subtítulos), a–d (opciones).</p>
+</main>
+<script>
+(async () => {
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem('qiskit:done') || '[]')); } catch (e) {}
+  const course = await (await fetch('course.json')).json();
+  const root = document.getElementById('parts');
+  for (const part of course.parts) {
+    const sec = document.createElement('section'); sec.className = 'part';
+    const h = document.createElement('h2'); h.textContent = part.title; sec.appendChild(h);
+    const d = document.createElement('p'); d.className = 'desc'; d.textContent = part.desc; sec.appendChild(d);
+    const list = document.createElement('div'); list.className = 'lessons';
+    for (const l of part.lessons) {
+      const a = document.createElement(l.pending ? 'div' : 'a');
+      a.className = 'lesson-link' + (done.has(l.id) ? ' done' : '') + (l.pending ? ' pending' : '');
+      if (!l.pending) a.href = 'lesson.html?l=' + encodeURIComponent(l.id);
+      const s = document.createElement('div'); s.className = 'sec'; s.textContent = l.section;
+      const mid = document.createElement('div');
+      const t = document.createElement('div'); t.className = 't'; t.textContent = l.title;
+      const sm = document.createElement('div'); sm.className = 's'; sm.textContent = l.summary;
+      mid.append(t, sm);
+      const m = document.createElement('div'); m.className = 'm'; m.textContent = l.pending ? 'en preparación' : (l.minutes ? `≈ ${l.minutes} min` : '');
+      a.append(s, mid, m);
+      list.appendChild(a);
+    }
+    sec.appendChild(list);
+    root.appendChild(sec);
+  }
+})();
+</script>
+</body>
+</html>

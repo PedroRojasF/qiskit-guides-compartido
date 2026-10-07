@@ -1,0 +1,648 @@
+{
+ "id": "p2-visualizar",
+ "part": "Parte II · Circuitos y operadores",
+ "section": "2.9",
+ "title": "Visualizar circuitos, estados y resultados",
+ "summary": "Dibujar circuitos, graficar estados (city, hinton, Pauli, q-esfera, Bloch), histogramas, valores esperados y líneas de tiempo.",
+ "goals": [
+  "dibujar circuitos con texto, matplotlib o LaTeX y personalizar el dibujo",
+  "elegir la gráfica adecuada para un estado cuántico",
+  "graficar resultados de Sampler y de Estimator"
+ ],
+ "beats": [
+  {
+   "id": "draw",
+   "tag": [
+    "2.9",
+    "Dibujar un circuito"
+   ],
+   "say": "Para ver un circuito puedes imprimirlo o llamar a draw. Por defecto, los dos producen un dibujo en texto. [[dif]]La diferencia: print imprime y devuelve None; draw devuelve el dibujo sin imprimir nada. En un cuaderno parecen iguales porque Jupyter muestra el valor de la última línea. [[out]]Hay otros dos dibujantes: matplotlib, con output igual a mpl, y LaTeX, que necesita el paquete qcircuit. [[save]]Y con filename guardas el dibujo en un archivo, útil para circuitos grandes.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\n\ncircuit = QuantumCircuit(3, 3)\ncircuit.x(1)\ncircuit.h(range(3))\ncircuit.cx(0, 1)\ncircuit.measure(range(3), range(3))\nprint(circuit)",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "     ┌───┐          ┌─┐\nq_0: ┤ H ├───────■──┤M├───\n     ├───┤┌───┐┌─┴─┐└╥┘┌─┐\nq_1: ┤ X ├┤ H ├┤ X ├─╫─┤M├\n     ├───┤└┬─┬┘└───┘ ║ └╥┘\nq_2: ┤ H ├─┤M├───────╫──╫─\n     └───┘ └╥┘       ║  ║\nc: 3/═══════╩════════╩══╩═\n            2        0  1",
+     "lang": "out",
+     "id": "o",
+     "size": 22
+    },
+    {
+     "type": "code",
+     "src": "circuit.draw(output=\"mpl\", filename=\"circuit-mpl.jpeg\")",
+     "lang": "python",
+     "id": "c2",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      8
+     ],
+     "id": "c",
+     "at": "dif"
+    },
+    {
+     "do": "show",
+     "id": "c2",
+     "at": "save"
+    }
+   ]
+  },
+  {
+   "id": "opciones",
+   "tag": [
+    "2.9",
+    "Personalizar el dibujo"
+   ],
+   "say": "draw tiene muchas opciones. [[comunes]]Dos sirven en los tres dibujantes: reverse bits invierte el orden de los qubits y plot barriers en False oculta las barreras. [[fold]]fold fija el ancho máximo: en texto son caracteres por línea; en matplotlib, capas antes de partir el dibujo. [[style]]style cambia colores, solo en matplotlib, [[scale]]y scale cambia el tamaño en matplotlib y LaTeX. [[func]]También existe la función circuit drawer, que hace lo mismo pero recibe el circuito como argumento.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Opción",
+      "Efecto",
+      "Dibujantes"
+     ],
+     "rows": [
+      [
+       "`reverse_bits=True`",
+       "qubit 0 abajo",
+       "todos"
+      ],
+      [
+       "`plot_barriers=False`",
+       "ocultar barreras",
+       "todos"
+      ],
+      [
+       "`fold=40`",
+       "ancho máximo",
+       "text, mpl"
+      ],
+      [
+       "`style={…}`",
+       "colores",
+       "mpl"
+      ],
+      [
+       "`scale=0.5`",
+       "tamaño",
+       "mpl, latex"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    },
+    {
+     "type": "code",
+     "src": "circuit_drawer(circuit, output=\"mpl\", plot_barriers=False)",
+     "lang": "python",
+     "id": "c",
+     "hidden": true,
+     "norun": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "comunes"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "comunes",
+     "t": 1.5
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "fold"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "style"
+    },
+    {
+     "do": "item",
+     "i": 4,
+     "id": "t",
+     "at": "scale"
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "func"
+    }
+   ]
+  },
+  {
+   "id": "estados",
+   "tag": [
+    "2.9",
+    "Graficar estados"
+   ],
+   "say": "Para aprender o depurar ayuda ver el estado del computador, aunque solo es posible para sistemas pequeños. [[dens]]Un estado puede ser un vector de estado, o una matriz de densidad, más general, que también describe mezclas. [[ej]]Tomemos este estado de dos qubits: una Hadamard y una RX controlada de pi medios. [[latex]]Lo más simple es dibujarlo en LaTeX, en notación de ket.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "circuit",
+       "qubits": 2,
+       "ops": [
+        {
+         "g": "h",
+         "q": [
+          0
+         ]
+        },
+        {
+         "g": "c",
+         "ctrl": [
+          0
+         ],
+         "q": [
+          1
+         ],
+         "base": "rx",
+         "label": "RX",
+         "p": "π/2"
+        }
+       ],
+       "id": "q"
+      },
+      {
+       "type": "math",
+       "tex": "\\rho=|\\psi\\rangle\\langle\\psi|\\quad\\text{o}\\quad\\rho=\\sum_k p_k|\\psi_k\\rangle\\langle\\psi_k|",
+       "size": 34
+      }
+     ],
+     "gap": 36
+    },
+    {
+     "type": "code",
+     "src": "from math import pi\nfrom qiskit.quantum_info import Statevector\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.crx(pi / 2, 0, 1)\npsi = Statevector(qc)\npsi.draw(\"latex\")",
+     "lang": "python",
+     "id": "c",
+     "hidden": true
+    },
+    {
+     "type": "math",
+     "tex": "|\\psi\\rangle=\\tfrac{\\sqrt2}{2}|00\\rangle+\\tfrac12|01\\rangle-\\tfrac{i}{2}|11\\rangle",
+     "id": "m",
+     "hidden": true,
+     "size": 40
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "show",
+     "id": "m",
+     "at": "latex"
+    }
+   ]
+  },
+  {
+   "id": "graficas",
+   "tag": [
+    "2.9",
+    "Cinco gráficas"
+   ],
+   "say": "Qiskit tiene cinco gráficas de estados. [[city]]plot state city: la parte real e imaginaria de cada elemento de la matriz de densidad, como barras en tres dimensiones que parecen rascacielos. [[hinton]]plot state hinton: lo mismo, pero el tamaño de un cuadrado indica la magnitud, blanco si es positivo y negro si es negativo. [[pauli]]plot state paulivec: los valores esperados de cada cadena de Pauli; toda matriz de densidad es una suma de Paulis con esos pesos. [[qs]]plot state qsphere: la q-esfera que ya conoces de Composer. [[bloch]]Y plot bloch multivector: una esfera de Bloch por qubit, que no puede mostrar correlaciones.",
+   "scene": [
+    {
+     "type": "table",
+     "head": [
+      "Función",
+      "Muestra"
+     ],
+     "rows": [
+      [
+       "`plot_state_city`",
+       "Re e Im de $\\rho_{ij}$ en barras 3D"
+      ],
+      [
+       "`plot_state_hinton`",
+       "magnitud = tamaño · signo = blanco/negro"
+      ],
+      [
+       "`plot_state_paulivec`",
+       "$\\langle P\\rangle$ de cada cadena de Pauli"
+      ],
+      [
+       "`plot_state_qsphere`",
+       "amplitud y fase sobre una esfera"
+      ],
+      [
+       "`plot_bloch_multivector`",
+       "una esfera de Bloch por qubit (sin correlaciones)"
+      ]
+     ],
+     "id": "t",
+     "stagger": true,
+     "size": 24
+    },
+    {
+     "type": "text",
+     "text": "también: `psi.draw(\"city\")`, `\"hinton\"`, `\"paulivec\"`, `\"qsphere\"`, `\"bloch\"` · `.savefig(\"out.png\")`",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "t",
+     "at": "city"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "t",
+     "at": "hinton"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "t",
+     "at": "pauli"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "t",
+     "at": "qs"
+    },
+    {
+     "do": "item",
+     "i": 4,
+     "id": "t",
+     "at": "bloch"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "bloch",
+     "t": 2
+    }
+   ]
+  },
+  {
+   "id": "paulivec",
+   "tag": [
+    "2.9",
+    "El estado como suma de Paulis"
+   ],
+   "say": "La gráfica de Pauli tiene una versión numérica. SparsePauliOp from operator, aplicado al estado, da su matriz de densidad como suma de Paulis. [[coef]]Cada coeficiente es el valor esperado de esa cadena, dividido entre cuatro: por ejemplo, ZZ vale un octavo, así que su valor esperado es un medio.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.quantum_info import SparsePauliOp\nprint(SparsePauliOp.from_operator(psi))",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "SparsePauliOp(['II', 'IX', 'XY', 'YI', 'YX', 'YZ', 'ZI', 'ZX', 'ZZ'],\n              coeffs=[ 0.25     +0.j,  0.1767767+0.j, -0.1767767+0.j, -0.125    +0.j,\n -0.1767767+0.j,  0.125    +0.j,  0.125    +0.j,  0.1767767+0.j,\n  0.125    +0.j])",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true,
+     "size": 20
+    },
+    {
+     "type": "math",
+     "tex": "|\\psi\\rangle\\langle\\psi|=\\tfrac14\\sum_P\\langle P\\rangle\\,P",
+     "id": "m",
+     "hidden": true,
+     "size": 38
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "o",
+     "at": "coef"
+    },
+    {
+     "do": "show",
+     "id": "m",
+     "at": "coef",
+     "t": 2
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "2.9",
+    "Comprueba"
+   ],
+   "say": "Elige la gráfica.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Quieres ver si dos qubits están correlacionados.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué gráfica **no** te sirve?",
+    "options": [
+     "`plot_state_city`",
+     "`plot_state_paulivec`",
+     "`plot_bloch_multivector`",
+     "`plot_state_qsphere`"
+    ],
+    "right": 2,
+    "why": "Correcto: las esferas de Bloch muestran cada qubit por separado. Un estado de Bell aparece como dos vectores de longitud cero: no se ve la correlación.",
+    "wrong": [
+     "La matriz de densidad completa sí contiene las correlaciones.",
+     "Los términos como $\\langle ZZ\\rangle$ muestran correlaciones.",
+     null,
+     "La q-esfera muestra el estado completo de varios qubits."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "hist",
+   "tag": [
+    "2.9",
+    "Histogramas de Sampler"
+   ],
+   "say": "Para los resultados de Sampler, plot histogram. [[opts]]Sus opciones: legend para nombrar varias ejecuciones en la misma gráfica, sort para ordenar ascendente o descendente, number to keep para quedarte con los más frecuentes y juntar el resto, color, bar labels para mostrar o no los números, y figsize para el tamaño. [[fuera]]Como todas estas funciones devuelven una figura de matplotlib, fuera de Jupyter usa show o savefig.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "plot_histogram(\n    [result[0].data.meas.get_counts(),\n     second_result[0].data.meas.get_counts()],\n    legend=[\"first\", \"second\"],\n    sort=\"desc\",\n    number_to_keep=4,\n    color=[\"orange\", \"black\"],\n    bar_labels=False,\n    figsize=(15, 12),\n)",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "text",
+     "text": "fuera de Jupyter: `fig.show()` o `fig.savefig(\"out.png\")`",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "4-9",
+     "id": "c",
+     "at": "opts"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "fuera"
+    }
+   ]
+  },
+  {
+   "id": "estimator",
+   "tag": [
+    "2.9",
+    "Graficar valores esperados"
+   ],
+   "say": "Para Estimator no hay una función propia: se usa un gráfico de barras de matplotlib. [[ej]]Aquí se estiman siete observables sobre un estado. [[bc]]Para pedirlos en una sola llamada, el arreglo de observables tiene forma siete por uno; lo verás en detalle con las primitivas. [[bar]]Las barras son los valores esperados, [[err]]y con yerr se añaden las barras de error, el error estándar que Estimator devuelve en stds.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "import numpy as np\nfrom matplotlib import pyplot as plt\nfrom qiskit.primitives import StatevectorEstimator\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.crx(1.5, 0, 1)\nlabels = [\"ZZ\", \"XX\", \"YZ\", \"ZY\", \"XY\", \"XZ\", \"ZX\"]\nobs = np.fromiter([SparsePauliOp(l) for l in labels], dtype=object).reshape(7, 1)\nres = StatevectorEstimator().run([(qc, obs)]).result()[0]\nplt.bar(labels, res.data.evs.flatten(), yerr=res.data.stds.flatten())\nprint(res.data.evs.flatten().round(2))",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    },
+    {
+     "type": "hist",
+     "data": [
+      [
+       "ZZ",
+       0.46
+      ],
+      [
+       "XX",
+       0
+      ],
+      [
+       "YZ",
+       0.5
+      ],
+      [
+       "ZY",
+       0
+      ],
+      [
+       "XY",
+       -0.68
+      ],
+      [
+       "XZ",
+       0
+      ],
+      [
+       "ZX",
+       0.73
+      ]
+     ],
+     "id": "h",
+     "hidden": true,
+     "h": 170,
+     "w": 700,
+     "digits": 2,
+     "color": "teal"
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "5-8",
+     "id": "c",
+     "at": "ej"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      9
+     ],
+     "id": "c",
+     "at": "bc"
+    },
+    {
+     "do": "hl",
+     "range": "10-11",
+     "id": "c",
+     "at": "bar"
+    },
+    {
+     "do": "show",
+     "id": "h",
+     "at": "bar"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      11
+     ],
+     "id": "c",
+     "at": "err"
+    }
+   ]
+  },
+  {
+   "id": "timeline",
+   "tag": [
+    "2.9",
+    "Línea de tiempo"
+   ],
+   "say": "Por último, puedes ver cuándo ocurre cada operación de un circuito ya transpilado con timeline draw. Sirve para encontrar qubits ociosos, que acumulan errores. [[back]]Necesita el target del backend, que sabe cuánto dura cada puerta; aquí usamos un backend genérico de cinco qubits. [[style]]Hay hojas de estilo, como IQXDebugging, pensada para depurar. [[din]]Para circuitos dinámicos en hardware de IBM este dibujo no es exacto; para ellos existe otra herramienta, que veremos en la Parte siete.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit.visualization.timeline import draw, IQXDebugging\nfrom qiskit.providers.fake_provider import GenericBackendV2\nfrom qiskit.transpiler import generate_preset_pass_manager\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\nbackend = GenericBackendV2(5)\npm = generate_preset_pass_manager(backend=backend, optimization_level=1)\nisa_circuit = pm.run(qc)\ndraw(isa_circuit, style=IQXDebugging(), target=backend.target)",
+     "lang": "python",
+     "id": "c",
+     "size": 22
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "range": "8-10",
+     "id": "c",
+     "at": "back"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      11
+     ],
+     "id": "c",
+     "at": "style"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "2.9",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre draw.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "circuit.draw(reverse_bits=True)",
+     "lang": "python",
+     "norun": true
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué cambia?",
+    "options": [
+     "el circuito: la X pasa al otro qubit",
+     "solo el dibujo: el qubit 0 queda abajo",
+     "el orden de los bits en los conteos"
+    ],
+    "right": 1,
+    "why": "Correcto: la opción de `draw` solo cambia el dibujo. El método `circuit.reverse_bits()` sí crea un circuito nuevo.",
+    "wrong": [
+     "Eso hace el método `reverse_bits()`, no la opción de `draw`.",
+     null,
+     "Los conteos no dependen de cómo dibujes el circuito."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "2.9",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]draw dibuja circuitos en texto, matplotlib o LaTeX, con muchas opciones. [[r2]]Hay cinco gráficas de estados, más LaTeX. [[r3]]plot histogram para Sampler, barras de matplotlib para Estimator. [[r4]]Y timeline draw para ver tiempos. Con esto termina la Parte dos; en la siguiente, la transpilación.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "`draw()`: texto · `mpl` · `latex` · `filename`, `reverse_bits`, `plot_barriers`, `fold`, `style`, `scale`",
+      "estados: city · hinton · paulivec · qsphere · bloch · `latex`",
+      "`plot_histogram(counts, legend, sort, number_to_keep…)` · Estimator con `plt.bar`",
+      "`timeline.draw(isa, target=…)`: tiempos y qubits ociosos"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "visualize-circuits",
+  "plot-quantum-states",
+  "visualize-results",
+  "visualize-circuit-timing"
+ ],
+ "practice": [
+  "Grafica el estado de la lección con las cinco funciones y guarda cada figura con `savefig`.",
+  "Usa `plot_histogram` con `number_to_keep=3` sobre un circuito aleatorio de 4 qubits.",
+  "Guías originales: [visualize-circuits](https://quantum.cloud.ibm.com/docs/en/guides/visualize-circuits) · [plot-quantum-states](https://quantum.cloud.ibm.com/docs/en/guides/plot-quantum-states) · [visualize-results](https://quantum.cloud.ibm.com/docs/en/guides/visualize-results) · [visualize-circuit-timing](https://quantum.cloud.ibm.com/docs/en/guides/visualize-circuit-timing)"
+ ],
+ "next": "p3-transpilar",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}

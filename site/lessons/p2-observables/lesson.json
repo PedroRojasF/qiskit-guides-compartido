@@ -1,0 +1,641 @@
+{
+ "id": "p2-observables",
+ "part": "Parte II · Circuitos y operadores",
+ "section": "2.6",
+ "title": "Observables en la base de Pauli y síntesis de unitarios",
+ "summary": "Escribir observables como sumas de Pauli, descomponer matrices, medir en otras bases y sintetizar matrices unitarias en puertas.",
+ "goals": [
+  "escribir un hamiltoniano de Ising con `from_sparse_list`",
+  "descomponer una matriz en cadenas de Pauli y medir en las bases $X$ e $Y$",
+  "sintetizar una unitaria y re-sintetizar un circuito para acortarlo"
+ ],
+ "beats": [
+  {
+   "id": "pauli",
+   "tag": [
+    "2.6",
+    "Todo observable es una suma de Paulis"
+   ],
+   "say": "Un observable es una propiedad física que se puede medir: la energía de un sistema, su magnetización, las correlaciones entre espines. [[suma]]Para medir un observable de n qubits en un computador cuántico, hay que escribirlo como suma de productos tensoriales de matrices de Pauli. [[mat]]Las cuatro matrices: identidad, X, Y y Z. [[herm]]Como un observable es hermítico, los coeficientes son reales. Si no lo fuera, igual se puede descomponer, pero con coeficientes complejos.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "O=\\sum_{k=1}^{K}\\alpha_k P_k,\\qquad P_k\\in\\{I,X,Y,Z\\}^{\\otimes n},\\ \\ \\alpha_k\\in\\mathbb R",
+     "size": 42
+    },
+    {
+     "type": "math",
+     "tex": "I=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}\\ X=\\begin{pmatrix}0&1\\\\1&0\\end{pmatrix}\\ Y=\\begin{pmatrix}0&-i\\\\i&0\\end{pmatrix}\\ Z=\\begin{pmatrix}1&0\\\\0&-1\\end{pmatrix}",
+     "id": "m",
+     "hidden": true,
+     "size": 34
+    },
+    {
+     "type": "text",
+     "text": "$O^\\dagger=O$ → coeficientes reales",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "m",
+     "at": "mat"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "herm"
+    }
+   ]
+  },
+  {
+   "id": "ising",
+   "tag": [
+    "2.6",
+    "Un hamiltoniano de Ising"
+   ],
+   "say": "Un ejemplo clásico: espines en una línea, con interacción Z Z entre vecinos y un campo transversal en X. [[int]]Las interacciones son tripletas Z Z sobre los qubits i e i más uno, con coeficiente uno. [[campo]]El campo, X sobre cada qubit, con coeficiente menos uno. [[res]]Con cuatro qubits salen siete términos. [[mag]]Y si en vez de la energía quieres la magnetización media, el observable es la suma de las Z dividida entre n.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "H=\\sum_{i}Z_iZ_{i+1}-\\sum_{i}X_i",
+     "size": 42
+    },
+    {
+     "type": "code",
+     "src": "from qiskit.quantum_info import SparsePauliOp\n\nn = 4\ninteractions = [(\"ZZ\", [i, i + 1], 1) for i in range(n - 1)]\nfield = [(\"X\", [i], -1) for i in range(n)]\nhamiltonian = SparsePauliOp.from_sparse_list(interactions + field, num_qubits=n)\nprint(hamiltonian)",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "code",
+     "src": "SparsePauliOp(['IIZZ', 'IZZI', 'ZZII', 'IIIX', 'IIXI', 'IXII', 'XIII'],\n              coeffs=[ 1.+0.j,  1.+0.j,  1.+0.j, -1.+0.j, -1.+0.j, -1.+0.j, -1.+0.j])",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    },
+    {
+     "type": "math",
+     "tex": "M=\\tfrac1n\\sum_i Z_i",
+     "id": "m",
+     "hidden": true,
+     "size": 36
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      4
+     ],
+     "id": "c",
+     "at": "int"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      5
+     ],
+     "id": "c",
+     "at": "campo"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    },
+    {
+     "do": "show",
+     "id": "m",
+     "at": "mag"
+    }
+   ]
+  },
+  {
+   "id": "descomponer",
+   "tag": [
+    "2.6",
+    "De matriz a Paulis"
+   ],
+   "say": "¿Y si tu observable viene como matriz? Las cadenas de Pauli forman una base de las matrices hermíticas, así que siempre se puede descomponer. [[coef]]Cada coeficiente es la traza de O por P, dividida entre dos a la n: la traza actúa como producto interno. [[code]]from operator hace ese cálculo. [[res]]Esta matriz de cuatro por cuatro resulta ser menos Z en el qubit cero, más un medio de X en el qubit uno, más Y Y.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "O=\\frac{1}{2^n}\\sum_{P}\\mathrm{Tr}(OP)\\,P",
+     "size": 42
+    },
+    {
+     "type": "code",
+     "src": "import numpy as np\n\nmatrix = np.array([[-1, 0, 0.5, -1], [0, 1, 1, 0.5],\n                   [0.5, 1, -1, 0], [-1, 0.5, 0, 1]])\nobservable = SparsePauliOp.from_operator(matrix)\nprint(observable)",
+     "lang": "python",
+     "id": "c",
+     "hidden": true
+    },
+    {
+     "type": "code",
+     "src": "SparsePauliOp(['IZ', 'XI', 'YY'],\n              coeffs=[-1. +0.j,  0.5+0.j,  1. -0.j])",
+     "lang": "out",
+     "id": "o",
+     "hidden": true,
+     "check": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "c",
+     "at": "code"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "tag": [
+    "2.6",
+    "Comprueba"
+   ],
+   "say": "Una descomposición a mano.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "O=\\begin{pmatrix}1&0\\\\0&0\\end{pmatrix}",
+     "size": 48
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Cómo se escribe en la base de Pauli?",
+    "options": [
+     "$\\tfrac12(I+Z)$",
+     "$\\tfrac12(I-Z)$",
+     "$I+Z$",
+     "$\\tfrac12(X+Z)$"
+    ],
+    "right": 0,
+    "why": "Correcto: $\\tfrac12\\mathrm{Tr}(OI)=\\tfrac12$ y $\\tfrac12\\mathrm{Tr}(OZ)=\\tfrac12$; los de $X$ e $Y$ son cero. Es el proyector sobre $|0\\rangle$.",
+    "wrong": [
+     null,
+     "Ese es el proyector sobre $|1\\rangle$.",
+     "Falta el factor $\\tfrac12$: $I+Z$ tiene un 2 en la esquina.",
+     "$\\mathrm{Tr}(OX)=0$: no hay término en $X$."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "bases",
+   "tag": [
+    "2.6",
+    "Medir en otras bases"
+   ],
+   "say": "Medir proyecta sobre la base computacional, así que directamente solo se pueden medir observables diagonales en ella: los que tienen solo I y Z. [[x]]Para medir X, primero cambias de base con una Hadamard: H X H es Z. [[y]]Para medir Y, aplicas S daga y luego H. [[circ]]En este circuito medimos el qubit cero en la base X, el uno en la Y y el dos en la Z, que no necesita nada. [[est]]Si usas Estimator, estos cambios de base se hacen solos.",
+   "scene": [
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "math",
+       "tex": "X\\to Z=HXH",
+       "size": 38
+      },
+      {
+       "type": "math",
+       "tex": "Y\\to Z=HS^\\dagger YSH",
+       "size": 38
+      }
+     ],
+     "gap": 50
+    },
+    {
+     "type": "circuit",
+     "qubits": 3,
+     "ops": [
+      {
+       "g": "ry",
+       "q": [
+        0
+       ],
+       "p": "0.8"
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        1,
+        2
+       ]
+      },
+      {
+       "g": "barrier",
+       "q": []
+      },
+      {
+       "g": "h",
+       "q": [
+        0
+       ],
+       "hidden": true
+      },
+      {
+       "g": "sdg",
+       "q": [
+        1
+       ],
+       "hidden": true
+      },
+      {
+       "g": "h",
+       "q": [
+        1
+       ],
+       "hidden": true
+      },
+      {
+       "g": "barrier",
+       "q": [],
+       "hidden": true
+      },
+      {
+       "g": "measure",
+       "q": [
+        0
+       ],
+       "c": 0,
+       "hidden": true
+      },
+      {
+       "g": "measure",
+       "q": [
+        1
+       ],
+       "c": 1,
+       "hidden": true
+      },
+      {
+       "g": "measure",
+       "q": [
+        2
+       ],
+       "c": 2,
+       "hidden": true
+      }
+     ],
+     "clbits": 3,
+     "creg": "meas",
+     "id": "q",
+     "hidden": true
+    },
+    {
+     "type": "text",
+     "text": "Estimator hace estos cambios de base automáticamente",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "q",
+     "at": "x"
+    },
+    {
+     "do": "gate",
+     "i": 4,
+     "id": "q",
+     "at": "x"
+    },
+    {
+     "do": "gate",
+     "i": [
+      5,
+      6
+     ],
+     "id": "q",
+     "at": "y"
+    },
+    {
+     "do": "gate",
+     "i": [
+      7,
+      8,
+      9,
+      10
+     ],
+     "id": "q",
+     "at": "circ"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "est"
+    }
+   ]
+  },
+  {
+   "id": "sintesis",
+   "tag": [
+    "2.6",
+    "Sintetizar una unitaria"
+   ],
+   "say": "Ahora el problema inverso: tienes una matriz unitaria y quieres un circuito que la implemente. Eso se llama síntesis. [[facil]]Para algunas clases de unitarias es eficiente, como las de Clifford o las que son un producto tensorial. Pero la mayoría no, y en general el costo crece exponencialmente con los qubits. [[unit]]Si no conoces una descomposición mejor, circuit punto unitary la añade como una puerta, y Qiskit la sintetiza al transpilar. [[ojo]]El aviso: los circuitos que salen suelen ser profundos, poco adecuados para hardware ruidoso.",
+   "scene": [
+    {
+     "type": "code",
+     "src": "from qiskit import QuantumCircuit\n\nU = 0.5 * np.array([[1, 1, 1, 1], [-1, 1, -1, 1],\n                    [-1, -1, 1, 1], [-1, 1, 1, -1]])\ncircuit = QuantumCircuit(2)\ncircuit.unitary(U, circuit.qubits)",
+     "lang": "python",
+     "id": "c"
+    },
+    {
+     "type": "box",
+     "kind": "warn",
+     "title": "Síntesis general",
+     "body": [
+      {
+       "type": "text",
+       "text": "costo exponencial · circuitos profundos · si conoces una descomposición, úsala",
+       "style": "body"
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      6
+     ],
+     "id": "c",
+     "at": "unit"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "ojo"
+    }
+   ]
+  },
+  {
+   "id": "resintesis",
+   "tag": [
+    "2.6",
+    "Re-sintetizar para acortar"
+   ],
+   "say": "La síntesis también sirve para optimizar. Este circuito usa tres puertas de dos qubits: dos CX y una CZ. [[op]]Calculamos su matriz con Operator, [[re]]y la volvemos a sintetizar en un circuito nuevo. [[res]]¡Resultado: una sola CX, rodeada de rotaciones de un qubit! [[tr]]La función transpile hace esta re-síntesis automáticamente con niveles de optimización suficientemente altos.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "sx",
+       "q": [
+        1
+       ]
+      },
+      {
+       "g": "cz",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "x",
+       "q": [
+        1
+       ]
+      },
+      {
+       "g": "x",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      }
+     ],
+     "id": "a"
+    },
+    {
+     "type": "code",
+     "src": "from qiskit.quantum_info import Operator\n\nU = Operator(circuit)\nbetter = QuantumCircuit(2)\nbetter.unitary(U, range(2))\nprint(circuit.count_ops(), better.decompose().count_ops())",
+     "lang": "python",
+     "id": "c",
+     "norun": true
+    },
+    {
+     "type": "code",
+     "src": "{'h': 2, 'cx': 2, 'x': 2, 'sx': 1, 'cz': 1}  →  {'u': 4, 'cx': 1}",
+     "lang": "out",
+     "id": "o",
+     "hidden": true
+    },
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "u",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "u",
+       "q": [
+        1
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "u",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "u",
+       "q": [
+        1
+       ]
+      }
+     ],
+     "id": "b",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "hl",
+     "lines": [
+      3
+     ],
+     "id": "c",
+     "at": "op"
+    },
+    {
+     "do": "hl",
+     "lines": [
+      4,
+      5
+     ],
+     "id": "c",
+     "at": "re"
+    },
+    {
+     "do": "show",
+     "id": "o",
+     "at": "res"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "res"
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "tag": [
+    "2.6",
+    "Comprueba"
+   ],
+   "say": "Una pregunta sobre medición.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Quieres medir $\\langle Y_0\\rangle$ con un Sampler, sin Estimator.",
+     "style": "body"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "choice",
+    "prompt": "¿Qué puertas añades al qubit 0 antes de medirlo?",
+    "options": [
+     "H",
+     "S y luego H",
+     "S† y luego H",
+     "H y luego S†"
+    ],
+    "right": 2,
+    "why": "Correcto: $HS^\\dagger$ lleva los autoestados de $Y$ a los de $Z$; luego mides normalmente.",
+    "wrong": [
+     "Con H mides $X$, no $Y$.",
+     "Con S en vez de S† mides $-Y$: los resultados quedan invertidos.",
+     null,
+     "El orden importa: primero S†, después H."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "cierre",
+   "tag": [
+    "2.6",
+    "Resumen"
+   ],
+   "say": "Resumen. [[r1]]Todo observable es una suma de cadenas de Pauli. [[r2]]from operator descompone cualquier matriz. [[r3]]Para medir X o Y hay que cambiar de base, salvo con Estimator. [[r4]]Y la síntesis convierte matrices en puertas, y a veces acorta circuitos.",
+   "scene": [
+    {
+     "type": "list",
+     "items": [
+      "todo observable: $O=\\sum_k\\alpha_kP_k$ (coeficientes reales si es hermítico)",
+      "`SparsePauliOp.from_operator(matriz)`: descomposición $\\tfrac{1}{2^n}\\mathrm{Tr}(OP)$",
+      "medir $X$: H · medir $Y$: S† y H (Estimator lo hace solo)",
+      "`circuit.unitary(U, qubits)` sintetiza · re-sintetizar puede acortar circuitos"
+     ],
+     "id": "r",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "r",
+     "at": "r1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "r",
+     "at": "r2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "r",
+     "at": "r3"
+    },
+    {
+     "do": "item",
+     "i": 3,
+     "id": "r",
+     "at": "r4"
+    }
+   ]
+  }
+ ],
+ "sources": [
+  "specify-observables-pauli",
+  "synthesize-unitary-operators"
+ ],
+ "practice": [
+  "Construye el Ising de 12 qubits de la guía original y calcula su valor esperado en $|0\\rangle^{\\otimes12}$ con `Statevector(...).expectation_value(H)`.",
+  "Toma un circuito aleatorio de 2 qubits con `random_circuit(2, 10)` y re-sintetízalo. ¿Cuántas CX quedan como máximo? (la respuesta general es 3).",
+  "Guías originales: [specify-observables-pauli](https://quantum.cloud.ibm.com/docs/en/guides/specify-observables-pauli) · [synthesize-unitary-operators](https://quantum.cloud.ibm.com/docs/en/guides/synthesize-unitary-operators)"
+ ],
+ "next": "p2-control-clasico",
+ "voice": "es-PE-AlexNeural",
+ "rate": "-4%"
+}
