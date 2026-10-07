@@ -677,6 +677,51 @@
       askEl.insertBefore(row, fb);
       const b = el('button', 'abtn primary', row); b.textContent = a.button || 'Mostrar la respuesta';
       b.onclick = () => { say('sol', a.solution); b.remove(); done(false); asked--; };
+    } else if (a.kind === 'predict') {
+      // Apuesta: no hay respuesta correcta todavía; el paso siguiente revela el resultado.
+      asked--;
+      askEl.querySelector('.qlabel').textContent = a.label || 'Tu predicción';
+      const key = `qiskit:predict:${LID}:${beat.id}`;
+      const box = el('div', 'opts', askEl);
+      askEl.insertBefore(box, fb);
+      a.options.forEach((opt, k) => {
+        const b = el('button', 'opt', box);
+        el('span', 'k', b).textContent = String.fromCharCode(97 + k) + ')';
+        rich(el('span', '', b), opt);
+        b.onclick = () => {
+          if (solved) return;
+          b.classList.add('picked');
+          try { localStorage.setItem(key, String(k)); } catch (e) {}
+          SFX.play('ok'); say('sol', a.after); done(false);
+        };
+      });
+    } else if (a.kind === 'reflect') {
+      // Preguntas abiertas: se guardan en el navegador y se recuperan al volver.
+      asked--;
+      askEl.querySelector('.qlabel').textContent = a.label || 'Reflexiona';
+      askEl.querySelector('.prompt').remove();
+      const key = `qiskit:reflect:${LID}:${beat.id}`;
+      let saved = [];
+      try { saved = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+      const areas = a.prompts.map((p, k) => {
+        rich(el('div', 'prompt rprompt', askEl), p);
+        const ta = el('textarea', 'reflect', askEl);
+        ta.rows = 2; ta.placeholder = 'Escribe con tus palabras…'; ta.value = saved[k] || '';
+        ta.onkeydown = e => e.stopPropagation();
+        askEl.insertBefore(ta, fb);
+        return ta;
+      });
+      askEl.querySelectorAll('.rprompt').forEach((p, k) => askEl.insertBefore(p, areas[k]));
+      const row = el('div', 'numrow', askEl);
+      askEl.insertBefore(row, fb);
+      const b = el('button', 'abtn primary', row); b.textContent = 'Guardar';
+      const skip = el('button', 'abtn', row); skip.textContent = 'Ahora no';
+      b.onclick = () => {
+        try { localStorage.setItem(key, JSON.stringify(areas.map(t => t.value.trim()))); } catch (e) {}
+        say('ok', 'Guardado. Lo verás aquí cuando vuelvas a esta lección.'); row.remove(); done(false);
+      };
+      skip.onclick = () => { row.remove(); done(false); };
+      if (!REVIEW) setTimeout(() => areas[0].focus({ preventScroll: true }), 50);
     }
   }
 

@@ -1,0 +1,62 @@
+"""Comprueba los cuadernos marimo de practica/.
+
+    uv run python tools/practica.py [cuaderno ...]
+
+Cada cuaderno se ejecuta dos veces: tal cual (debe correr sin errores) y con las soluciones
+de practica/soluciones/<nombre>.json aplicadas (todas las comprobaciones deben dar ✅).
+"""
+import contextlib
+import importlib.util
+import io
+import json
+import re
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).parent.parent
+PR = ROOT / "practica"
+sys.stdout.reconfigure(encoding="utf-8")
+
+
+def veredictos(path):
+    spec = importlib.util.spec_from_file_location("nb_" + path.stem, path)
+    nb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(nb)
+    with contextlib.redirect_stdout(io.StringIO()):
+        outputs, _ = nb.app.run()
+    text = " ".join(str(getattr(o, "text", o)) for o in outputs)
+    return re.findall(r"(✅|❌)\s+([^<&]{0,60})", text)
+
+
+fallos = 0
+files = [Path(a) for a in sys.argv[1:]] or sorted(p for p in PR.rglob("*.py") if "soluciones" not in p.parts)
+for f in files:
+    rel = f.resolve().relative_to(PR.resolve()).as_posix()
+    try:
+        sin = veredictos(f)
+    except Exception as e:
+        print(f"✗ {rel}: error sin resolver: {e!r}"); fallos += 1; continue
+    solf = PR / "soluciones" / (rel.replace("/", "__").replace(".py", ".json"))
+    if not solf.exists():
+        print(f"? {rel}: sin soluciones ({len(sin)} comprobaciones)"); continue
+    src = f.read_text(encoding="utf-8")
+    for old, new in json.loads(solf.read_text(encoding="utf-8")):
+        if old not in src:
+            print(f"✗ {rel}: la solución no encuentra «{old}»"); fallos += 1
+        src = src.replace(old, new)
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d) / f.name
+        tmp.write_text(src, encoding="utf-8")
+        try:
+            con = veredictos(tmp)
+        except Exception as e:
+            print(f"✗ {rel}: error con soluciones: {e!r}"); fallos += 1; continue
+    malos = [m for s, m in con if s == "❌"]
+    pend = sum(1 for s, _ in sin if s == "❌")
+    if malos:
+        print(f"✗ {rel}: con soluciones aún falla: {malos}"); fallos += 1
+    else:
+        print(f"✓ {rel}: {pend} misiones pendientes sin resolver, todas ✅ con soluciones")
+print("fallos:", fallos)
+sys.exit(1 if fallos else 0)

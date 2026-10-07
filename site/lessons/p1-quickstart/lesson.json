@@ -178,12 +178,12 @@
    ]
   },
   {
-   "id": "estado",
+   "id": "predice",
    "tag": [
     "1.4",
-    "Qué estado se prepara"
+    "Antes de ejecutar"
    ],
-   "say": "Sigamos el estado paso a paso. [[ini]]Al principio, cero cero. [[h]]La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos. [[cx]]La CNOT invierte el qubit uno solo cuando el qubit cero vale uno. El término con el cero se queda igual y el término con el uno se convierte en uno uno. [[bell]]El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos. Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados. [[orden]]Un detalle de notación: Qiskit escribe el qubit cero a la derecha. Lo verás en una lección propia.",
+   "say": "Antes de ejecutarlo, apuesta. Mediremos los dos qubits mil veinticuatro veces. [[cual]]¿Qué cadenas de bits crees que aparecerán? No hace falta que sepas la respuesta: equivocarse en una predicción enseña más que acertar por memoria.",
    "scene": [
     {
      "type": "circuit",
@@ -201,73 +201,43 @@
         0,
         1
        ]
+      },
+      {
+       "g": "barrier",
+       "q": []
+      },
+      {
+       "g": "measure",
+       "q": [
+        0
+       ],
+       "c": 0
+      },
+      {
+       "g": "measure",
+       "q": [
+        1
+       ],
+       "c": 1
       }
      ],
-     "id": "q"
-    },
-    {
-     "type": "math",
-     "tex": "|00\\rangle",
-     "id": "a",
-     "size": 40
-    },
-    {
-     "type": "math",
-     "tex": "\\xrightarrow{H_0}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|0\\gold{1}\\rangle\\big)",
-     "id": "b",
-     "hidden": true,
-     "size": 40
-    },
-    {
-     "type": "math",
-     "tex": "\\xrightarrow{CX}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|\\gold{11}\\rangle\\big)",
-     "id": "c",
-     "hidden": true,
-     "size": 40,
-     "color": "fg"
-    },
-    {
-     "type": "text",
-     "text": "en $|q_1q_0\\rangle$ el qubit 0 va a la **derecha**",
-     "style": "note",
-     "id": "n",
-     "hidden": true
+     "clbits": 2,
+     "creg": "meas"
     }
    ],
-   "actions": [
-    {
-     "do": "cursor",
-     "col": 0,
-     "id": "q",
-     "at": "h"
-    },
-    {
-     "do": "show",
-     "id": "b",
-     "at": "h"
-    },
-    {
-     "do": "cursor",
-     "col": 1,
-     "id": "q",
-     "at": "cx"
-    },
-    {
-     "do": "show",
-     "id": "c",
-     "at": "cx"
-    },
-    {
-     "do": "emph",
-     "id": "c",
-     "at": "bell"
-    },
-    {
-     "do": "show",
-     "id": "n",
-     "at": "orden"
-    }
-   ]
+   "actions": [],
+   "ask": {
+    "kind": "predict",
+    "prompt": "Tras 1024 disparos, ¿qué esperas ver?",
+    "options": [
+     "las cuatro cadenas (`00`, `01`, `10`, `11`), cerca de 256 cada una",
+     "solo `00` y `11`, cerca de 512 cada una",
+     "siempre `00`",
+     "solo `01` y `10`"
+    ],
+    "after": "Anotado. Ahora ejecutémoslo y veamos si acertaste."
+   },
+   "align": "top"
   },
   {
    "id": "ejecutar",
@@ -360,7 +330,7 @@
     "1.4",
     "El resultado"
    ],
-   "say": "Esto es lo que imprime. [[mitad]]Casi la mitad de las veces sale cero cero, y la otra mitad, uno uno. [[nunca]]Nunca sale cero uno ni uno cero. [[azar]]Los números exactos cambian en cada ejecución, porque son muestras aleatorias.",
+   "say": "Esto es lo que imprime. [[mitad]]Casi la mitad de las veces sale cero cero, y la otra mitad, uno uno. [[nunca]]Nunca sale cero uno ni uno cero. Si apostaste por la opción b, acertaste; si no, mejor todavía: ahora vale la pena entender por qué. [[azar]]Los números exactos cambian en cada ejecución, porque son muestras aleatorias.",
    "scene": [
     {
      "type": "code",
@@ -412,6 +382,98 @@
      "do": "show",
      "id": "n",
      "at": "azar"
+    }
+   ]
+  },
+  {
+   "id": "estado",
+   "tag": [
+    "1.4",
+    "Qué estado se prepara"
+   ],
+   "say": "¿Por qué solo cero cero y uno uno? Sigamos el estado paso a paso. [[ini]]Al principio, cero cero. [[h]]La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos. [[cx]]La CNOT invierte el qubit uno solo cuando el qubit cero vale uno. El término con el cero se queda igual y el término con el uno se convierte en uno uno. [[bell]]El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos. Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados. [[orden]]Un detalle de notación: Qiskit escribe el qubit cero a la derecha. Lo verás en una lección propia.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 2,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      }
+     ],
+     "id": "q"
+    },
+    {
+     "type": "math",
+     "tex": "|00\\rangle",
+     "id": "a",
+     "size": 40
+    },
+    {
+     "type": "math",
+     "tex": "\\xrightarrow{H_0}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|0\\gold{1}\\rangle\\big)",
+     "id": "b",
+     "hidden": true,
+     "size": 40
+    },
+    {
+     "type": "math",
+     "tex": "\\xrightarrow{CX}\\ \\tfrac{1}{\\sqrt2}\\big(|00\\rangle+|\\gold{11}\\rangle\\big)",
+     "id": "c",
+     "hidden": true,
+     "size": 40,
+     "color": "fg"
+    },
+    {
+     "type": "text",
+     "text": "en $|q_1q_0\\rangle$ el qubit 0 va a la **derecha**",
+     "style": "note",
+     "id": "n",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "cursor",
+     "col": 0,
+     "id": "q",
+     "at": "h"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "h"
+    },
+    {
+     "do": "cursor",
+     "col": 1,
+     "id": "q",
+     "at": "cx"
+    },
+    {
+     "do": "show",
+     "id": "c",
+     "at": "cx"
+    },
+    {
+     "do": "emph",
+     "id": "c",
+     "at": "bell"
+    },
+    {
+     "do": "show",
+     "id": "n",
+     "at": "orden"
     }
    ]
   },
@@ -536,12 +598,61 @@
    ]
   },
   {
+   "id": "ghz_pred",
+   "tag": [
+    "1.4",
+    "Tres qubits"
+   ],
+   "say": "Un paso más. Con tres qubits, añadimos una segunda CNOT, del qubit uno al dos.",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 3,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        1,
+        2
+       ]
+      }
+     ]
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "predict",
+    "prompt": "¿Qué cadenas aparecerán ahora?",
+    "options": [
+     "solo `000` y `111`",
+     "`000`, `011` y `111`",
+     "las ocho cadenas por igual",
+     "solo `001` y `110`"
+    ],
+    "after": "Anotado. Veamos."
+   },
+   "align": "top"
+  },
+  {
    "id": "ghz",
    "tag": [
     "1.4",
     "Experimenta: tres qubits"
    ],
-   "say": "Ahora experimenta. Cambia a tres qubits [[cx]]y añade una segunda CNOT, del qubit uno al dos. [[res]]Las mediciones dan solo cero cero cero y uno uno uno: los tres qubits quedaron entrelazados. Es un estado GHZ.",
+   "say": "Este es el código. [[cx]]La única diferencia es la segunda CNOT. [[res]]Las mediciones dan solo cero cero cero y uno uno uno: la CNOT copia la correlación al tercer qubit, y los tres quedan entrelazados. Es un estado GHZ.",
    "scene": [
     {
      "type": "code",
@@ -678,6 +789,168 @@
      null,
      "El qubit 0 sigue siendo aleatorio.",
      "Los dos qubits siguen correlacionados: solo cambia cuál correlación."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "mision",
+   "tag": [
+    "1.4",
+    "Tu turno"
+   ],
+   "say": "Ahora te toca a ti. Abre el cuaderno de práctica de esta lección con el comando de abajo. [[n1]]Primero reproduces el estado de Bell. [[n2]]Después lo modificas para que los qubits salgan siempre distintos. [[n3]]Y por último creas una función que prepara un estado GHZ de cualquier tamaño. [[check]]Cada misión tiene una comprobación que se actualiza sola mientras escribes: busca la marca verde.",
+   "scene": [
+    {
+     "type": "mission",
+     "notebook": "practica/p1-quickstart.py",
+     "tasks": [
+      {
+       "level": 1,
+       "text": "Ejecuta el estado de Bell y lee sus conteos."
+      },
+      {
+       "level": 2,
+       "text": "Prepara $\\tfrac{1}{\\sqrt2}(|01\\rangle+|10\\rangle)$ añadiendo una sola puerta."
+      },
+      {
+       "level": 3,
+       "text": "Escribe `ghz(n)` con un bucle y explora el histograma hasta $n=10$."
+      }
+     ],
+     "id": "m",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "m",
+     "at": "n1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "m",
+     "at": "n2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "m",
+     "at": "n3"
+    }
+   ]
+  },
+  {
+   "id": "proyecto",
+   "tag": [
+    "1.4",
+    "Tu proyecto: una cadena de espines"
+   ],
+   "say": "Además de las misiones de cada lección, a lo largo del curso vas a construir un solo proyecto: simular una cadena de espines, el modelo de Ising con campo transversal, y terminar ejecutándolo en un computador cuántico real. [[terminos]]El término Z Z quiere alinear a los vecinos; el término X los hace girar. La pregunta que vas a responder: cómo evoluciona la magnetización cuando se enciende el campo de golpe. [[hito]]Hoy empieza el hito uno: crea tu cuenta gratuita de IBM Quantum, y construye un paso de tiempo para dos espines. Comprobarás qué tan buena es la aproximación.",
+   "scene": [
+    {
+     "type": "math",
+     "tex": "H = J\\sum_i Z_iZ_{i+1} + h\\sum_i X_i",
+     "size": 46
+    },
+    {
+     "type": "row",
+     "items": [
+      {
+       "type": "box",
+       "kind": "def",
+       "title": "$J\\,ZZ$",
+       "body": [
+        {
+         "type": "text",
+         "text": "alinea espines vecinos",
+         "style": "body"
+        }
+       ],
+       "id": "a",
+       "hidden": true
+      },
+      {
+       "type": "box",
+       "kind": "idea",
+       "title": "$h\\,X$",
+       "body": [
+        {
+         "type": "text",
+         "text": "los hace girar",
+         "style": "body"
+        }
+       ],
+       "id": "b",
+       "hidden": true
+      }
+     ],
+     "gap": 24
+    },
+    {
+     "type": "mission",
+     "notebook": "practica/proyecto/hito1.py",
+     "tasks": [
+      {
+       "level": 1,
+       "text": "Crea tu cuenta de IBM Quantum (plan Open) y escribe el Hamiltoniano de 2 espines."
+      },
+      {
+       "level": 2,
+       "text": "Construye un paso de Trotter con `rzz` y `rx`."
+      },
+      {
+       "level": 3,
+       "text": "Calcula la fidelidad frente a la evolución exacta y mira cómo cae al agrandar $dt$."
+      }
+     ],
+     "title": "Proyecto Ising · Hito I",
+     "id": "m",
+     "hidden": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "show",
+     "id": "a",
+     "at": "terminos"
+    },
+    {
+     "do": "show",
+     "id": "b",
+     "at": "terminos",
+     "t": 2
+    },
+    {
+     "do": "show",
+     "id": "m",
+     "at": "hito"
+    }
+   ]
+  },
+  {
+   "id": "reflexion",
+   "tag": [
+    "1.4",
+    "Reflexiona"
+   ],
+   "say": "Antes de cerrar, dos preguntas para pensar. No hay respuesta automática: escribe con tus palabras. Lo que escribas se guarda y lo verás cuando vuelvas a esta lección.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "Explicar con tus palabras es la mejor prueba de que entendiste.",
+     "style": "subtitle"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "reflect",
+    "prompts": [
+     "¿Por qué en el estado de Bell **nunca** sale `01`? Explícalo sin fórmulas, como a un compañero.",
+     "Dos monedas trucadas que siempre caen igual también darían solo `00` y `11`. ¿Qué crees que haría falta medir para distinguirlas de un estado entrelazado?"
     ]
    },
    "align": "top"

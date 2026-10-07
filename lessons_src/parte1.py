@@ -1,6 +1,6 @@
 """Parte I · Primeros pasos: qué es Qiskit, patrones, instalación, quickstart y Composer."""
 from lib import (T, M, L, Row, Box, A, shows, beat, choice, numeric, reveal, lesson,
-                 Code, Out, Sh, Circ, G, Hist, Table, Flow)
+                 Code, Out, Sh, Circ, G, Hist, Table, Flow, predict, reflect, Mission)
 
 # ------------------------------------------------------------------ 1.1 Qué es Qiskit
 que_es = lesson(
@@ -433,18 +433,15 @@ quickstart = lesson(
              [A("lines", "c", at="nuevo", to=4), A("show", "q", at="nuevo"), A("lines", "c", at="h", to=5), A("gate", "q", at="h", i=0),
               A("lines", "c", at="cx", to=6), A("gate", "q", at="cx", i=1), A("lines", "c", at="m", to=7), A("gate", "q", at="m", i=[2, 3, 4])]),
 
-        beat("estado", ("", "Qué estado se prepara"),
-             """Sigamos el estado paso a paso. [[ini]]Al principio, cero cero. [[h]]La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos.
-             [[cx]]La CNOT invierte el qubit uno solo cuando el qubit cero vale uno. El término con el cero se queda igual y el término con el uno se convierte en uno uno.
-             [[bell]]El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos. Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados.
-             [[orden]]Un detalle de notación: Qiskit escribe el qubit cero a la derecha. Lo verás en una lección propia.""",
-             [Circ(2, [G("h", 0), G("cx", 0, 1)], id="q"),
-              M(r"|00\rangle", id="a", size=40),
-              M(r"\xrightarrow{H_0}\ \tfrac{1}{\sqrt2}\big(|00\rangle+|0\gold{1}\rangle\big)", id="b", hidden=True, size=40),
-              M(r"\xrightarrow{CX}\ \tfrac{1}{\sqrt2}\big(|00\rangle+|\gold{11}\rangle\big)", id="c", hidden=True, size=40, color="fg"),
-              T("en $|q_1q_0\\rangle$ el qubit 0 va a la **derecha**", "note", id="n", hidden=True)],
-             [A("cursor", "q", at="h", col=0), A("show", "b", at="h"), A("cursor", "q", at="cx", col=1), A("show", "c", at="cx"),
-              A("emph", "c", at="bell"), A("show", "n", at="orden")]),
+        beat("predice", ("", "Antes de ejecutar"),
+             """Antes de ejecutarlo, apuesta. Mediremos los dos qubits mil veinticuatro veces. [[cual]]¿Qué cadenas de bits crees que aparecerán? No hace falta que sepas la respuesta: equivocarse en una predicción enseña más que acertar por memoria.""",
+             [Circ(2, [G("h", 0), G("cx", 0, 1), G("barrier"), G("measure", 0, c=0), G("measure", 1, c=1)], clbits=2, creg="meas")],
+             ask=predict("Tras 1024 disparos, ¿qué esperas ver?",
+                         ["las cuatro cadenas (`00`, `01`, `10`, `11`), cerca de 256 cada una",
+                          "solo `00` y `11`, cerca de 512 cada una",
+                          "siempre `00`",
+                          "solo `01` y `10`"],
+                         "Anotado. Ahora ejecutémoslo y veamos si acertaste.")),
 
         beat("ejecutar", ("", "Ejecutar con un Sampler"),
              """Para ejecutarlo usamos una primitiva. StatevectorSampler simula el circuito de forma exacta y luego toma muestras, como si fuera un computador cuántico ideal.
@@ -457,12 +454,25 @@ quickstart = lesson(
               A("step", "f", at="meas", i=2), A("step", "f", at="counts", i=3)]),
 
         beat("resultado", ("", "El resultado"),
-             """Esto es lo que imprime. [[mitad]]Casi la mitad de las veces sale cero cero, y la otra mitad, uno uno. [[nunca]]Nunca sale cero uno ni uno cero.
+             """Esto es lo que imprime. [[mitad]]Casi la mitad de las veces sale cero cero, y la otra mitad, uno uno. [[nunca]]Nunca sale cero uno ni uno cero. Si apostaste por la opción b, acertaste; si no, mejor todavía: ahora vale la pena entender por qué.
              [[azar]]Los números exactos cambian en cada ejecución, porque son muestras aleatorias.""",
              [Out("{'11': 510, '00': 514}", id="o"),
               Hist([["00", 514], ["01", 0], ["10", 0], ["11", 510]], id="h", grow=True, ymax=600, color="blue"),
               T("cada ejecución da números un poco distintos", "note", id="n", hidden=True)],
              [A("grow", "h", at="mitad", dur=1.4), A("show", "n", at="azar")]),
+
+        beat("estado", ("", "Qué estado se prepara"),
+             """¿Por qué solo cero cero y uno uno? Sigamos el estado paso a paso. [[ini]]Al principio, cero cero. [[h]]La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos.
+             [[cx]]La CNOT invierte el qubit uno solo cuando el qubit cero vale uno. El término con el cero se queda igual y el término con el uno se convierte en uno uno.
+             [[bell]]El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos. Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados.
+             [[orden]]Un detalle de notación: Qiskit escribe el qubit cero a la derecha. Lo verás en una lección propia.""",
+             [Circ(2, [G("h", 0), G("cx", 0, 1)], id="q"),
+              M(r"|00\rangle", id="a", size=40),
+              M(r"\xrightarrow{H_0}\ \tfrac{1}{\sqrt2}\big(|00\rangle+|0\gold{1}\rangle\big)", id="b", hidden=True, size=40),
+              M(r"\xrightarrow{CX}\ \tfrac{1}{\sqrt2}\big(|00\rangle+|\gold{11}\rangle\big)", id="c", hidden=True, size=40, color="fg"),
+              T("en $|q_1q_0\\rangle$ el qubit 0 va a la **derecha**", "note", id="n", hidden=True)],
+             [A("cursor", "q", at="h", col=0), A("show", "b", at="h"), A("cursor", "q", at="cx", col=1), A("show", "c", at="cx"),
+              A("emph", "c", at="bell"), A("show", "n", at="orden")]),
 
         beat("q1", ("", "Comprueba"),
              """Piensa en el estado de Bell.""",
@@ -492,9 +502,16 @@ plot_histogram(counts)
 # plt.show()""", id="c")],
              [A("hl", "c", at="plt", range="5-7")]),
 
+        beat("ghz_pred", ("", "Tres qubits"),
+             """Un paso más. Con tres qubits, añadimos una segunda CNOT, del qubit uno al dos.""",
+             [Circ(3, [G("h", 0), G("cx", 0, 1), G("cx", 1, 2)])],
+             ask=predict("¿Qué cadenas aparecerán ahora?",
+                         ["solo `000` y `111`", "`000`, `011` y `111`", "las ocho cadenas por igual", "solo `001` y `110`"],
+                         "Anotado. Veamos.")),
+
         beat("ghz", ("", "Experimenta: tres qubits"),
-             """Ahora experimenta. Cambia a tres qubits [[cx]]y añade una segunda CNOT, del qubit uno al dos.
-             [[res]]Las mediciones dan solo cero cero cero y uno uno uno: los tres qubits quedaron entrelazados. Es un estado GHZ.""",
+             """Este es el código. [[cx]]La única diferencia es la segunda CNOT.
+             [[res]]Las mediciones dan solo cero cero cero y uno uno uno: la CNOT copia la correlación al tercer qubit, y los tres quedan entrelazados. Es un estado GHZ.""",
              [Code("""qc = QuantumCircuit(3)
 qc.h(0)
 qc.cx(0, 1)
@@ -512,6 +529,35 @@ print(StatevectorSampler().run([qc]).result()[0].data.meas.get_counts())""", id=
                         ["`'00'` y `'11'`", "`'01'` y `'10'`", "solo `'10'`", "las cuatro, por igual"], 1,
                         "Correcto: la X invierte el qubit 1, que es el bit de la **izquierda**: $00\\to10$ y $11\\to01$. Siguen anticorrelacionados al 50 %.",
                         wrong=["La X cambia el qubit 1 en ambos términos.", None, "El qubit 0 sigue siendo aleatorio.", "Los dos qubits siguen correlacionados: solo cambia cuál correlación."])),
+
+        beat("mision", ("", "Tu turno"),
+             """Ahora te toca a ti. Abre el cuaderno de práctica de esta lección con el comando de abajo. [[n1]]Primero reproduces el estado de Bell. [[n2]]Después lo modificas para que los qubits salgan siempre distintos. [[n3]]Y por último creas una función que prepara un estado GHZ de cualquier tamaño.
+             [[check]]Cada misión tiene una comprobación que se actualiza sola mientras escribes: busca la marca verde.""",
+             [Mission("practica/p1-quickstart.py", [
+                 (1, "Ejecuta el estado de Bell y lee sus conteos."),
+                 (2, r"Prepara $\tfrac{1}{\sqrt2}(|01\rangle+|10\rangle)$ añadiendo una sola puerta."),
+                 (3, "Escribe `ghz(n)` con un bucle y explora el histograma hasta $n=10$.")], id="m", stagger=True)],
+             [A("item", "m", at="n1", i=0), A("item", "m", at="n2", i=1), A("item", "m", at="n3", i=2)]),
+
+        beat("proyecto", ("", "Tu proyecto: una cadena de espines"),
+             """Además de las misiones de cada lección, a lo largo del curso vas a construir un solo proyecto: simular una cadena de espines, el modelo de Ising con campo transversal, y terminar ejecutándolo en un computador cuántico real.
+             [[terminos]]El término Z Z quiere alinear a los vecinos; el término X los hace girar. La pregunta que vas a responder: cómo evoluciona la magnetización cuando se enciende el campo de golpe.
+             [[hito]]Hoy empieza el hito uno: crea tu cuenta gratuita de IBM Quantum, y construye un paso de tiempo para dos espines. Comprobarás qué tan buena es la aproximación.""",
+             [M(r"H = J\sum_i Z_iZ_{i+1} + h\sum_i X_i", size=46),
+              Row(Box("def", r"$J\,ZZ$", T("alinea espines vecinos", "body"), id="a", hidden=True),
+                  Box("idea", r"$h\,X$", T("los hace girar", "body"), id="b", hidden=True), gap=24),
+              Mission("practica/proyecto/hito1.py", [
+                  (1, "Crea tu cuenta de IBM Quantum (plan Open) y escribe el Hamiltoniano de 2 espines."),
+                  (2, "Construye un paso de Trotter con `rzz` y `rx`."),
+                  (3, "Calcula la fidelidad frente a la evolución exacta y mira cómo cae al agrandar $dt$.")],
+                  title="Proyecto Ising · Hito I", id="m", hidden=True)],
+             [A("show", "a", at="terminos"), A("show", "b", at="terminos", t=2), A("show", "m", at="hito")]),
+
+        beat("reflexion", ("", "Reflexiona"),
+             """Antes de cerrar, dos preguntas para pensar. No hay respuesta automática: escribe con tus palabras. Lo que escribas se guarda y lo verás cuando vuelvas a esta lección.""",
+             [T("Explicar con tus palabras es la mejor prueba de que entendiste.", "subtitle")],
+             ask=reflect("¿Por qué en el estado de Bell **nunca** sale `01`? Explícalo sin fórmulas, como a un compañero.",
+                         "Dos monedas trucadas que siempre caen igual también darían solo `00` y `11`. ¿Qué crees que haría falta medir para distinguirlas de un estado entrelazado?")),
 
         beat("cierre", ("", "Resumen"),
              """Resumen. [[r1]]QuantumCircuit con h, cx y measure all construye un estado de Bell. [[r2]]StatevectorSampler lo ejecuta localmente, sin cuenta. [[r3]]Los conteos se leen con result, data, el nombre del registro y get counts.

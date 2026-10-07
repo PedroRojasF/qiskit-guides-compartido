@@ -125,6 +125,22 @@ def reveal(prompt, solution, button=None):
     return d
 
 
+def predict(prompt, options, after):
+    """Apuesta antes de ver el resultado: cualquier opción vale; no cuenta en la puntuación.
+    after: lo que se dice al elegir (el resultado se revela en el paso siguiente)."""
+    return dict(kind="predict", prompt=prompt, options=options, after=after)
+
+
+def reflect(*prompts):
+    """Preguntas abiertas con cuadro de texto; las respuestas se guardan en el navegador."""
+    return dict(kind="reflect", prompts=list(prompts))
+
+
+def Mission(notebook, tasks, **k):
+    """Tarjeta «Tu turno»: tasks = [(nivel, texto)] con nivel 1 (reproducir), 2 (modificar) o 3 (crear)."""
+    return dict(type="mission", notebook=notebook, tasks=[dict(level=l, text=t) for l, t in tasks], **k)
+
+
 def lesson(id, title, summary, goals, beats, sources=(), practice=()):
     """sources: nombres de las guías originales (docs/guides/<nombre>) que cubre la lección.
     practice: ejercicios para hacer en tu propio entorno al terminar."""

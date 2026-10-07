@@ -43,51 +43,27 @@
    ]
   ]
  },
- "estado": {
-  "dur": 46.344,
+ "predice": {
+  "dur": 18.552,
   "marks": {
-   "ini": 3.156,
-   "h": 6.171,
-   "cx": 12.978,
-   "bell": 24.499,
-   "orden": 38.043
+   "cual": 7.473
   },
   "cues": [
    [
     0.107,
-    "Sigamos el estado paso a paso."
+    "Antes de ejecutarlo, apuesta."
    ],
    [
-    3.156,
-    "Al principio, cero cero."
+    3.34,
+    "Mediremos los dos qubits mil veinticuatro veces."
    ],
    [
-    6.171,
-    "La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos."
+    7.473,
+    "¿Qué cadenas de bits crees que aparecerán?"
    ],
    [
-    12.978,
-    "La CNOT invierte el qubit uno solo cuando el qubit cero vale uno."
-   ],
-   [
-    18.314,
-    "El término con el cero se queda igual y el término con el uno se convierte en uno uno."
-   ],
-   [
-    24.499,
-    "El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos."
-   ],
-   [
-    31.094,
-    "Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados."
-   ],
-   [
-    38.043,
-    "Un detalle de notación: Qiskit escribe el qubit cero a la derecha."
-   ],
-   [
-    43.407,
-    "Lo verás en una lección propia."
+    10.855,
+    "No hace falta que sepas la respuesta: equivocarse en una predicción enseña más que acertar por memoria."
    ]
   ]
  },
@@ -123,11 +99,11 @@
   ]
  },
  "resultado": {
-  "dur": 17.712,
+  "dur": 26.256,
   "marks": {
    "mitad": 2.505,
    "nunca": 8.28,
-   "azar": 11.563
+   "azar": 20.112
   },
   "cues": [
    [
@@ -144,7 +120,63 @@
    ],
    [
     11.563,
+    "Si apostaste por la opción b, acertaste; si no, mejor todavía: ahora vale la pena entender por qué."
+   ],
+   [
+    20.112,
     "Los números exactos cambian en cada ejecución, porque son muestras aleatorias."
+   ]
+  ]
+ },
+ "estado": {
+  "dur": 49.488,
+  "marks": {
+   "ini": 6.284,
+   "h": 9.299,
+   "cx": 16.106,
+   "bell": 27.627,
+   "orden": 41.171
+  },
+  "cues": [
+   [
+    0.107,
+    "¿Por qué solo cero cero y uno uno?"
+   ],
+   [
+    3.241,
+    "Sigamos el estado paso a paso."
+   ],
+   [
+    6.284,
+    "Al principio, cero cero."
+   ],
+   [
+    9.299,
+    "La Hadamard pone al qubit cero en superposición: cero más uno, sobre raíz de dos."
+   ],
+   [
+    16.106,
+    "La CNOT invierte el qubit uno solo cuando el qubit cero vale uno."
+   ],
+   [
+    21.442,
+    "El término con el cero se queda igual y el término con el uno se convierte en uno uno."
+   ],
+   [
+    27.627,
+    "El resultado es el estado de Bell: cero cero más uno uno, sobre raíz de dos."
+   ],
+   [
+    34.222,
+    "Ninguno de los dos qubits tiene un valor propio; solo están perfectamente correlacionados."
+   ],
+   [
+    41.171,
+    "Un detalle de notación: Qiskit escribe el qubit cero a la derecha."
+   ],
+   [
+    46.535,
+    "Lo verás en una lección propia."
    ]
   ]
  },
@@ -208,27 +240,41 @@
    ]
   ]
  },
+ "ghz_pred": {
+  "dur": 8.304,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Un paso más."
+   ],
+   [
+    2.18,
+    "Con tres qubits, añadimos una segunda CNOT, del qubit uno al dos."
+   ]
+  ]
+ },
  "ghz": {
-  "dur": 18.816,
+  "dur": 19.416,
   "marks": {
-   "cx": 3.722,
-   "res": 8.421
+   "cx": 2.406,
+   "res": 6.171
   },
   "cues": [
    [
     0.107,
-    "Ahora experimenta."
+    "Este es el código."
    ],
    [
-    2.392,
-    "Cambia a tres qubits y añade una segunda CNOT, del qubit uno al dos."
+    2.406,
+    "La única diferencia es la segunda CNOT."
    ],
    [
-    8.421,
-    "Las mediciones dan solo cero cero cero y uno uno uno: los tres qubits quedaron entrelazados."
+    6.171,
+    "Las mediciones dan solo cero cero cero y uno uno uno: la CNOT copia la correlación al tercer qubit, y los tres quedan entrelazados."
    ],
    [
-    16.007,
+    16.616,
     "Es un estado GHZ."
    ]
   ]
@@ -240,6 +286,88 @@
    [
     0.107,
     "Otro experimento: vuelve al circuito de Bell y, justo antes de medir, añade una X sobre el qubit uno."
+   ]
+  ]
+ },
+ "mision": {
+  "dur": 28.968,
+  "marks": {
+   "n1": 7.374,
+   "n2": 10.601,
+   "n3": 15.682,
+   "check": 21.951
+  },
+  "cues": [
+   [
+    0.107,
+    "Ahora te toca a ti."
+   ],
+   [
+    2.449,
+    "Abre el cuaderno de práctica de esta lección con el comando de abajo."
+   ],
+   [
+    7.374,
+    "Primero reproduces el estado de Bell."
+   ],
+   [
+    10.601,
+    "Después lo modificas para que los qubits salgan siempre distintos."
+   ],
+   [
+    15.682,
+    "Y por último creas una función que prepara un estado GHZ de cualquier tamaño."
+   ],
+   [
+    21.951,
+    "Cada misión tiene una comprobación que se actualiza sola mientras escribes: busca la marca verde."
+   ]
+  ]
+ },
+ "proyecto": {
+  "dur": 42.672,
+  "marks": {
+   "terminos": 15.979,
+   "hito": 29.99
+  },
+  "cues": [
+   [
+    0.107,
+    "Además de las misiones de cada lección, a lo largo del curso vas a construir un solo proyecto: simular una cadena de espines, el modelo de Ising con campo transversal, y terminar ejecutándolo en un computador cuántico real."
+   ],
+   [
+    15.979,
+    "El término Z Z quiere alinear a los vecinos; el término X los hace girar."
+   ],
+   [
+    22.673,
+    "La pregunta que vas a responder: cómo evoluciona la magnetización cuando se enciende el campo de golpe."
+   ],
+   [
+    29.99,
+    "Hoy empieza el hito uno: crea tu cuenta gratuita de IBM Quantum, y construye un paso de tiempo para dos espines."
+   ],
+   [
+    39.006,
+    "Comprobarás qué tan buena es la aproximación."
+   ]
+  ]
+ },
+ "reflexion": {
+  "dur": 13.728,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Antes de cerrar, dos preguntas para pensar."
+   ],
+   [
+    4.119,
+    "No hay respuesta automática: escribe con tus palabras."
+   ],
+   [
+    8.789,
+    "Lo que escribas se guarda y lo verás cuando vuelvas a esta lección."
    ]
   ]
  },

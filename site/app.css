@@ -367,3 +367,20 @@ code { font-family: var(--mono); font-size: .86em; background: var(--box-bg); bo
 @media (prefers-reduced-motion: reduce) {
   .blk, .list li { transition: none; }
 }
+
+/* ---------- piloto: predicción, reflexión y misión ---------- */
+.opt.picked { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent); }
+#ask .rprompt { font-size: 21px; margin: 4px 0 8px; }
+#ask.on { max-height: 100%; overflow-y: auto; }
+textarea.reflect { width: 100%; font: 18px/1.4 var(--serif); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--opt-line);
+  background: var(--input-bg); color: inherit; resize: vertical; margin-bottom: 8px; }
+textarea.reflect:focus { outline: 2px solid var(--blue); }
+.mcard { border: 1px solid var(--line); border-top: 4px solid var(--teal); border-radius: 14px; background: var(--box-bg);
+  padding: 20px 26px; max-width: 1000px; width: 100%; text-align: left; }
+.mcard .mtitle { font: 600 22px var(--sans); color: var(--teal); margin-bottom: 12px; letter-spacing: .02em; }
+.mtask { display: flex; gap: 16px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); font-size: 24px; transition: opacity .45s; }
+.mtask.hid { opacity: 0; }
+.mtask .mlv { flex: none; width: 150px; font: 600 17px var(--sans); color: var(--muted); }
+.mcmd { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+.mcmd code { font-size: 18px; padding: 8px 12px; }
+@media (orientation: portrait) { .mtask { flex-direction: column; gap: 4px; } }

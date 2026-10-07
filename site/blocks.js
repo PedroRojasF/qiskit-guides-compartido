@@ -346,6 +346,29 @@
     return o;
   };
 
+  // ---------------------------------------------------------------- misión «Tu turno»
+  // notebook: ruta del cuaderno marimo · tasks: [{level: 1|2|3, text}]
+  B.mission = (box, s, A) => {
+    const o = { spec: s };
+    box.classList.remove('fig');
+    const card = A.el('div', 'mcard', box);
+    A.el('div', 'mtitle', card).textContent = s.title || 'Tu turno';
+    const LV = { 1: ['🟢', 'Reproduce'], 2: ['🟡', 'Modifica'], 3: ['🔴', 'Crea'] };
+    o.items = s.tasks.map(t => {
+      const r = A.el('div', 'mtask' + (s.stagger ? ' hid' : ''), card);
+      const [dot, name] = LV[t.level] || LV[1];
+      A.el('span', 'mlv', r).textContent = `${dot} ${name}`;
+      A.rich(A.el('span', 'mtx', r), t.text);
+      return r;
+    });
+    const cmd = `uv run marimo edit ${s.notebook}`;
+    const row = A.el('div', 'mcmd', card);
+    A.el('code', '', row).textContent = cmd;
+    const b = A.el('button', 'abtn', row); b.textContent = 'Copiar';
+    b.onclick = e => { e.stopPropagation(); navigator.clipboard?.writeText(cmd).then(() => { b.textContent = 'Copiado ✓'; }); };
+    return o;
+  };
+
   // ---------------------------------------------------------------- flujo de pasos
   B.flow = (box, s, A) => {
     const o = { spec: s, items: [] };

@@ -30,7 +30,7 @@
      "section": "1.4",
      "title": "Tu primer circuito: el estado de Bell",
      "summary": "Construir, simular y graficar un estado entrelazado en pocas líneas, sin cuenta ni clave.",
-     "minutes": 6
+     "minutes": 8
     },
     {
      "id": "p1-composer",
@@ -50,7 +50,7 @@
      "section": "2.1",
      "title": "Construir circuitos",
      "summary": "QuantumCircuit por dentro: qubits, registros, instrucciones, composición, puertas controladas, profundidad y circuitos con parámetros.",
-     "minutes": 6
+     "minutes": 7
     },
     {
      "id": "p2-medir",

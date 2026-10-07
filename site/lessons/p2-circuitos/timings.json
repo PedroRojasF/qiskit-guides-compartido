@@ -114,12 +114,10 @@
    ]
   ]
  },
- "depth": {
-  "dur": 29.376,
+ "depth_pred": {
+  "dur": 23.208,
   "marks": {
-   "cap": 8.86,
-   "seq": 13.007,
-   "tiempo": 17.168
+   "apuesta": 16.786
   },
   "cues": [
    [
@@ -128,14 +126,40 @@
    ],
    [
     8.86,
+    "Dos puertas sobre qubits distintos pueden ir en la misma capa; sobre el mismo qubit, una detrás de otra."
+   ],
+   [
+    16.786,
+    "Con esa regla, apuesta: ¿qué profundidad tiene este circuito de seis puertas?"
+   ]
+  ]
+ },
+ "depth": {
+  "dur": 28.272,
+  "marks": {
+   "cap": 1.939,
+   "seq": 6.086,
+   "tiempo": 10.247
+  },
+  "cues": [
+   [
+    0.107,
+    "Contemos."
+   ],
+   [
+    1.939,
     "Puertas sobre qubits distintos van en la misma capa."
    ],
    [
-    13.007,
+    6.086,
     "Puertas sobre el mismo qubit, una detrás de otra."
    ],
    [
-    17.168,
+    10.247,
+    "Tres capas: si dijiste seis, contaste puertas, no capas."
+   ],
+   [
+    16.05,
     "Como cada puerta tarda, la profundidad se parece al tiempo de ejecución, y es una de las cantidades que deciden si un circuito se puede ejecutar bien en un dispositivo ruidoso."
    ]
   ]
@@ -213,6 +237,42 @@
    [
     0.107,
     "Una pregunta sobre compose."
+   ]
+  ]
+ },
+ "mision": {
+  "dur": 33.048,
+  "marks": {
+   "n1": 2.137,
+   "n2": 9.893,
+   "n3": 22.985
+  },
+  "cues": [
+   [
+    0.107,
+    "Ahora te toca."
+   ],
+   [
+    2.137,
+    "Primero, inspecciona la lista de instrucciones de un circuito y predice su profundidad antes de calcularla."
+   ],
+   [
+    9.893,
+    "Después, reordena un estado GHZ de seis qubits para que tenga menos capas sin cambiar el estado: la escalera de CNOTs tiene profundidad seis, y se puede bajar a cuatro."
+   ],
+   [
+    22.985,
+    "Y por último, construye una familia de veintiún circuitos a partir de uno solo con un parámetro, y comprueba que siguen la curva teórica."
+   ]
+  ]
+ },
+ "reflexion": {
+  "dur": 5.352,
+  "marks": {},
+  "cues": [
+   [
+    0.107,
+    "Dos preguntas para pensar con calma, conectadas con tu proyecto."
    ]
   ]
  },

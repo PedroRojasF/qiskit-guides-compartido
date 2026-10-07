@@ -1,6 +1,6 @@
 """Parte II · Circuitos y operadores."""
 from lib import (T, M, L, Row, Box, A, shows, beat, choice, numeric, reveal, lesson,
-                 Code, Out, Sh, Circ, G, Hist, Table, Flow)
+                 Code, Out, Sh, Circ, G, Hist, Table, Flow, predict, reflect, Mission)
 
 
 def resumen(items, marks=("r1", "r2", "r3", "r4")):
@@ -90,10 +90,15 @@ qc_a.decompose()''', id="c"),
              [A("show", "q", at="gate"), A("gate", "q", at="gate", i=1), A("hl", "c", at="ctrl", lines=[4, 5]), A("gate", "q", at="ctrl", i=2),
               A("hl", "c", at="dec", lines=[6])]),
 
-        beat("depth", ("", "Profundidad"),
-             """La profundidad de un circuito cuenta cuántas capas de puertas, ejecutadas en paralelo, hacen falta para completarlo.
-             [[cap]]Puertas sobre qubits distintos van en la misma capa. [[seq]]Puertas sobre el mismo qubit, una detrás de otra.
-             [[tiempo]]Como cada puerta tarda, la profundidad se parece al tiempo de ejecución, y es una de las cantidades que deciden si un circuito se puede ejecutar bien en un dispositivo ruidoso.""",
+        beat("depth_pred", ("", "Profundidad"),
+             """La profundidad de un circuito cuenta cuántas capas de puertas, ejecutadas en paralelo, hacen falta para completarlo. Dos puertas sobre qubits distintos pueden ir en la misma capa; sobre el mismo qubit, una detrás de otra.
+             [[apuesta]]Con esa regla, apuesta: ¿qué profundidad tiene este circuito de seis puertas?""",
+             [Circ(3, [G("h", 0), G("x", 1), G("y", 2), G("cx", 0, 1), G("z", 2), G("h", 1)])],
+             ask=predict("¿Cuánto devolverá `qc.depth()`?", ["2", "3", "4", "6"], "Anotado. Contemos las capas.")),
+
+        beat("depth", ("", "Contar capas"),
+             """Contemos. [[cap]]Puertas sobre qubits distintos van en la misma capa. [[seq]]Puertas sobre el mismo qubit, una detrás de otra.
+             [[tiempo]]Tres capas: si dijiste seis, contaste puertas, no capas. Como cada puerta tarda, la profundidad se parece al tiempo de ejecución, y es una de las cantidades que deciden si un circuito se puede ejecutar bien en un dispositivo ruidoso.""",
              [Circ(3, [G("h", 0), G("x", 1), G("y", 2), G("cx", 0, 1), G("z", 2), G("h", 1)], id="q"),
               Code("print(qc.depth())", id="c", norun=True),
               Out("3", id="o", hidden=True)],
@@ -151,6 +156,21 @@ c = a.compose(b)''', id="c", norun=True)],
                         ["0", "1", "2", "depende de `b`"], 0,
                         "Correcto: `compose` devuelve un circuito nuevo (`c`, con una H). `a` queda intacto, salvo que uses `inplace=True`.",
                         wrong=[None, "Esa H está en `c`, no en `a`.", "No: `a` no se modifica.", "No depende: `compose` nunca modifica `a` sin `inplace=True`."])),
+
+        beat("mision", ("", "Tu turno"),
+             """Ahora te toca. [[n1]]Primero, inspecciona la lista de instrucciones de un circuito y predice su profundidad antes de calcularla. [[n2]]Después, reordena un estado GHZ de seis qubits para que tenga menos capas sin cambiar el estado: la escalera de CNOTs tiene profundidad seis, y se puede bajar a cuatro.
+             [[n3]]Y por último, construye una familia de veintiún circuitos a partir de uno solo con un parámetro, y comprueba que siguen la curva teórica.""",
+             [Mission("practica/p2-circuitos.py", [
+                 (1, "Recorre `qc.data` y predice `qc.depth()` antes de ejecutar."),
+                 (2, "Prepara el mismo GHZ de 6 qubits con profundidad ≤ 4."),
+                 (3, r"Una sola plantilla con `Parameter` → 21 circuitos que siguen $\sin^2(\theta/2)$.")], id="m", stagger=True)],
+             [A("item", "m", at="n1", i=0), A("item", "m", at="n2", i=1), A("item", "m", at="n3", i=2)]),
+
+        beat("reflexion", ("", "Reflexiona"),
+             """Dos preguntas para pensar con calma, conectadas con tu proyecto.""",
+             [T("La profundidad es tiempo, y el tiempo es ruido.", "subtitle")],
+             ask=reflect("¿Por qué crees que a un computador cuántico real le importa más la **profundidad** que el número total de puertas?",
+                         "En tu proyecto Ising, cada paso de tiempo es el mismo circuito con otros ángulos. ¿Cómo usarías `compose` y `Parameter` para construir 10 pasos?")),
 
         beat("cierre", ("", "Resumen"),
              """Resumen. [[r1]]Un circuito es una colección de qubits y una lista de instrucciones. [[r2]]append, compose, to instruction, to gate y decompose te dejan combinar y organizar circuitos.

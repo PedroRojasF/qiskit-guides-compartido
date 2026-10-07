@@ -314,12 +314,78 @@
    ]
   },
   {
-   "id": "depth",
+   "id": "depth_pred",
    "tag": [
     "2.1",
     "Profundidad"
    ],
-   "say": "La profundidad de un circuito cuenta cuántas capas de puertas, ejecutadas en paralelo, hacen falta para completarlo. [[cap]]Puertas sobre qubits distintos van en la misma capa. [[seq]]Puertas sobre el mismo qubit, una detrás de otra. [[tiempo]]Como cada puerta tarda, la profundidad se parece al tiempo de ejecución, y es una de las cantidades que deciden si un circuito se puede ejecutar bien en un dispositivo ruidoso.",
+   "say": "La profundidad de un circuito cuenta cuántas capas de puertas, ejecutadas en paralelo, hacen falta para completarlo. Dos puertas sobre qubits distintos pueden ir en la misma capa; sobre el mismo qubit, una detrás de otra. [[apuesta]]Con esa regla, apuesta: ¿qué profundidad tiene este circuito de seis puertas?",
+   "scene": [
+    {
+     "type": "circuit",
+     "qubits": 3,
+     "ops": [
+      {
+       "g": "h",
+       "q": [
+        0
+       ]
+      },
+      {
+       "g": "x",
+       "q": [
+        1
+       ]
+      },
+      {
+       "g": "y",
+       "q": [
+        2
+       ]
+      },
+      {
+       "g": "cx",
+       "q": [
+        0,
+        1
+       ]
+      },
+      {
+       "g": "z",
+       "q": [
+        2
+       ]
+      },
+      {
+       "g": "h",
+       "q": [
+        1
+       ]
+      }
+     ]
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "predict",
+    "prompt": "¿Cuánto devolverá `qc.depth()`?",
+    "options": [
+     "2",
+     "3",
+     "4",
+     "6"
+    ],
+    "after": "Anotado. Contemos las capas."
+   },
+   "align": "top"
+  },
+  {
+   "id": "depth",
+   "tag": [
+    "2.1",
+    "Contar capas"
+   ],
+   "say": "Contemos. [[cap]]Puertas sobre qubits distintos van en la misma capa. [[seq]]Puertas sobre el mismo qubit, una detrás de otra. [[tiempo]]Tres capas: si dijiste seis, contaste puertas, no capas. Como cada puerta tarda, la profundidad se parece al tiempo de ejecución, y es una de las cantidades que deciden si un circuito se puede ejecutar bien en un dispositivo ruidoso.",
    "scene": [
     {
      "type": "circuit",
@@ -603,6 +669,80 @@
      "Esa H está en `c`, no en `a`.",
      "No: `a` no se modifica.",
      "No depende: `compose` nunca modifica `a` sin `inplace=True`."
+    ]
+   },
+   "align": "top"
+  },
+  {
+   "id": "mision",
+   "tag": [
+    "2.1",
+    "Tu turno"
+   ],
+   "say": "Ahora te toca. [[n1]]Primero, inspecciona la lista de instrucciones de un circuito y predice su profundidad antes de calcularla. [[n2]]Después, reordena un estado GHZ de seis qubits para que tenga menos capas sin cambiar el estado: la escalera de CNOTs tiene profundidad seis, y se puede bajar a cuatro. [[n3]]Y por último, construye una familia de veintiún circuitos a partir de uno solo con un parámetro, y comprueba que siguen la curva teórica.",
+   "scene": [
+    {
+     "type": "mission",
+     "notebook": "practica/p2-circuitos.py",
+     "tasks": [
+      {
+       "level": 1,
+       "text": "Recorre `qc.data` y predice `qc.depth()` antes de ejecutar."
+      },
+      {
+       "level": 2,
+       "text": "Prepara el mismo GHZ de 6 qubits con profundidad ≤ 4."
+      },
+      {
+       "level": 3,
+       "text": "Una sola plantilla con `Parameter` → 21 circuitos que siguen $\\sin^2(\\theta/2)$."
+      }
+     ],
+     "id": "m",
+     "stagger": true
+    }
+   ],
+   "actions": [
+    {
+     "do": "item",
+     "i": 0,
+     "id": "m",
+     "at": "n1"
+    },
+    {
+     "do": "item",
+     "i": 1,
+     "id": "m",
+     "at": "n2"
+    },
+    {
+     "do": "item",
+     "i": 2,
+     "id": "m",
+     "at": "n3"
+    }
+   ]
+  },
+  {
+   "id": "reflexion",
+   "tag": [
+    "2.1",
+    "Reflexiona"
+   ],
+   "say": "Dos preguntas para pensar con calma, conectadas con tu proyecto.",
+   "scene": [
+    {
+     "type": "text",
+     "text": "La profundidad es tiempo, y el tiempo es ruido.",
+     "style": "subtitle"
+    }
+   ],
+   "actions": [],
+   "ask": {
+    "kind": "reflect",
+    "prompts": [
+     "¿Por qué crees que a un computador cuántico real le importa más la **profundidad** que el número total de puertas?",
+     "En tu proyecto Ising, cada paso de tiempo es el mismo circuito con otros ángulos. ¿Cómo usarías `compose` y `Parameter` para construir 10 pasos?"
     ]
    },
    "align": "top"
