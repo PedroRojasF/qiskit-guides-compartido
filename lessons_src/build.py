@@ -57,6 +57,13 @@ def coverage():
 ERRORS = []
 
 
+def walk(blocks):
+    """Recorre bloques de escena, incluidos los anidados en filas."""
+    for blk in blocks:
+        yield blk
+        yield from walk(blk.get("items", []) if blk.get("type") == "row" else [])
+
+
 def check(lesson):
     """Errores de autoría que conviene detectar antes de generar audio (se acumulan en ERRORS)."""
     def fail(msg):
@@ -113,8 +120,11 @@ def main():
             else:
                 secs = sum(len(b["say"].split()) for b in les["beats"]) / 140 * 60
             secs += 45 * sum(1 for b in les["beats"] if "ask" in b)
-            entry["lessons"].append(dict(id=lid, section=section, title=les["title"], summary=les["summary"],
-                                         minutes=round(secs / 60)))
+            item = dict(id=lid, section=section, title=les["title"], summary=les["summary"], minutes=round(secs / 60))
+            missions = [blk for b in les["beats"] for blk in walk(b["scene"]) if blk.get("type") == "mission"]
+            if missions:
+                item["missions"] = [dict(notebook=m["notebook"], title=m.get("title", "Tu turno"), tasks=len(m["tasks"])) for m in missions]
+            entry["lessons"].append(item)
         course["parts"].append(entry)
     if ERRORS:
         raise SystemExit("\n".join(ERRORS))

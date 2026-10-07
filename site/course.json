@@ -30,7 +30,19 @@
      "section": "1.4",
      "title": "Tu primer circuito: el estado de Bell",
      "summary": "Construir, simular y graficar un estado entrelazado en pocas líneas, sin cuenta ni clave.",
-     "minutes": 8
+     "minutes": 10,
+     "missions": [
+      {
+       "notebook": "practica/p1-quickstart.py",
+       "title": "Tu turno",
+       "tasks": 3
+      },
+      {
+       "notebook": "practica/proyecto/hito1.py",
+       "title": "Proyecto Ising · Hito I",
+       "tasks": 3
+      }
+     ]
     },
     {
      "id": "p1-composer",
@@ -50,7 +62,14 @@
      "section": "2.1",
      "title": "Construir circuitos",
      "summary": "QuantumCircuit por dentro: qubits, registros, instrucciones, composición, puertas controladas, profundidad y circuitos con parámetros.",
-     "minutes": 7
+     "minutes": 8,
+     "missions": [
+      {
+       "notebook": "practica/p2-circuitos.py",
+       "title": "Tu turno",
+       "tasks": 3
+      }
+     ]
     },
     {
      "id": "p2-medir",

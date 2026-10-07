@@ -3,50 +3,392 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Qiskit · Guías</title>
+<title>Qubit a qubit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
 <script src="theme.js"></script>
+<script>try { document.documentElement.dataset.paleta = localStorage.getItem('qiskit:paleta') || 'fosforo'; } catch (e) { document.documentElement.dataset.paleta = 'fosforo'; }</script>
+<style>
+/* ---------- paletas: oscuro por defecto, claro con data-theme o preferencia del sistema ---------- */
+:root, [data-paleta="fosforo"] { --bg:#0b0e0d; --bg2:#121715; --card:#151b19; --line:#24302b; --ink:#e9f0ec; --muted:#8b9a93;
+  --acc:#b8f34a; --acc-ink:#142004; --acc2:#3dd6b5; --acc3:#f2c14e; --bad:#ff7b7b; --glow:#b8f34a33; }
+[data-paleta="cobre"] { --bg:#121014; --bg2:#19161b; --card:#1e1a20; --line:#322b33; --ink:#f3ece8; --muted:#a3958f;
+  --acc:#ff8a4c; --acc-ink:#2a1205; --acc2:#b69cff; --acc3:#ffd27a; --bad:#ff7b9c; --glow:#ff8a4c33; }
+[data-paleta="medianoche"] { --bg:#0a0f1e; --bg2:#0f1629; --card:#131b31; --line:#232e4a; --ink:#e8edf7; --muted:#8a96b3;
+  --acc:#5eead4; --acc-ink:#04221d; --acc2:#f472b6; --acc3:#fbbf24; --bad:#fb7185; --glow:#5eead433; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"])[data-paleta="fosforo"] { --bg:#f4f6f2; --bg2:#eaefe6; --card:#ffffff; --line:#d9e1d4; --ink:#16201a; --muted:#5d6b63; --acc:#4d8a0c; --acc-ink:#ffffff; --acc2:#0f8a72; --acc3:#a8690c; --bad:#c4314b; --glow:#4d8a0c22; }
+  :root:not([data-theme="dark"])[data-paleta="cobre"] { --bg:#faf7f4; --bg2:#f2ece6; --card:#ffffff; --line:#e6ddd4; --ink:#211a17; --muted:#6e625c; --acc:#c2410c; --acc-ink:#ffffff; --acc2:#6a48cf; --acc3:#a8690c; --bad:#be123c; --glow:#c2410c22; }
+  :root:not([data-theme="dark"])[data-paleta="medianoche"] { --bg:#f5f7fc; --bg2:#e9eef8; --card:#ffffff; --line:#d8dfee; --ink:#121a2e; --muted:#5b6782; --acc:#0e7490; --acc-ink:#ffffff; --acc2:#be185d; --acc3:#a16207; --bad:#be123c; --glow:#0e749022; }
+}
+[data-theme="light"][data-paleta="fosforo"] { --bg:#f4f6f2; --bg2:#eaefe6; --card:#ffffff; --line:#d9e1d4; --ink:#16201a; --muted:#5d6b63; --acc:#4d8a0c; --acc-ink:#ffffff; --acc2:#0f8a72; --acc3:#a8690c; --bad:#c4314b; --glow:#4d8a0c22; }
+[data-theme="light"][data-paleta="cobre"] { --bg:#faf7f4; --bg2:#f2ece6; --card:#ffffff; --line:#e6ddd4; --ink:#211a17; --muted:#6e625c; --acc:#c2410c; --acc-ink:#ffffff; --acc2:#6a48cf; --acc3:#a8690c; --bad:#be123c; --glow:#c2410c22; }
+[data-theme="light"][data-paleta="medianoche"] { --bg:#f5f7fc; --bg2:#e9eef8; --card:#ffffff; --line:#d8dfee; --ink:#121a2e; --muted:#5b6782; --acc:#0e7490; --acc-ink:#ffffff; --acc2:#be185d; --acc3:#a16207; --bad:#be123c; --glow:#0e749022; }
+
+* { box-sizing:border-box; }
+html { background:var(--bg); }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, system-ui, sans-serif; }
+a { color:inherit; text-decoration:none; }
+button { font:inherit; color:inherit; cursor:pointer; }
+code, .mono { font-family:'JetBrains Mono', monospace; font-size:.88em; }
+code { background:var(--bg2); border:1px solid var(--line); border-radius:6px; padding:0 .3em; }
+.wrap { max-width:1160px; margin:0 auto; padding:0 24px; }
+h1, h2, h3, .brand { font-family:'Bricolage Grotesque', Inter, sans-serif; }
+
+/* barra */
+.bar { display:flex; align-items:center; gap:14px; padding:18px 0; }
+.brand { font-weight:800; font-size:20px; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; }
+.brand .dot { width:12px; height:12px; border-radius:50%; background:var(--acc); box-shadow:0 0 14px var(--acc); }
+.bar .sp { flex:1; }
+.pill { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:6px 12px; font-size:13px; color:var(--muted); }
+.theme-btn { border:1px solid var(--line); background:var(--card); border-radius:999px; width:36px; height:36px; }
+
+/* portada */
+.hero { display:grid; grid-template-columns:1.25fr .9fr; gap:36px; align-items:center; padding:28px 0 40px; }
+.hero h1 { font-size:clamp(38px, 5.6vw, 68px); line-height:1.02; margin:0 0 16px; letter-spacing:-.025em; font-weight:800; }
+.hero h1 span { color:var(--acc); }
+.hero .lead { color:var(--muted); font-size:17.5px; max-width:560px; margin:0 0 26px; }
+.next { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px 22px; display:grid; gap:6px; max-width:560px;
+        box-shadow:0 0 0 1px var(--glow), 0 18px 40px -24px var(--glow); }
+.next .k { font:600 12px 'JetBrains Mono', monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--acc); }
+.next .t { font:700 22px 'Bricolage Grotesque', sans-serif; }
+.next .s { color:var(--muted); font-size:14.5px; }
+.next .go { justify-self:start; margin-top:8px; background:var(--acc); color:var(--acc-ink); border:0; border-radius:12px; padding:11px 18px; font-weight:600; }
+.next .go:hover { filter:brightness(1.08); }
+.stats { display:flex; gap:26px; margin-top:22px; flex-wrap:wrap; }
+.stats div { font-size:13px; color:var(--muted); }
+.stats b { display:block; font:700 26px 'Bricolage Grotesque', sans-serif; color:var(--ink); }
+svg.bloch { width:100%; max-width:420px; justify-self:center; overflow:visible; }
+.bloch .ax { stroke:var(--line); stroke-width:1.5; fill:none; }
+.bloch .eq { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 5; opacity:.6; }
+.bloch .sph { fill:url(#gl); stroke:var(--muted); stroke-width:1.5; }
+.bloch .vec { stroke:var(--acc); stroke-width:4; stroke-linecap:round; filter:drop-shadow(0 0 8px var(--acc)); }
+.bloch .tip { fill:var(--acc); }
+.bloch .trail { fill:none; stroke:var(--acc2); stroke-width:2; opacity:.55; }
+.bloch text { font:600 15px 'JetBrains Mono', monospace; fill:var(--muted); }
+
+/* secciones */
+section.blk { margin:34px 0 10px; }
+.sh { display:flex; align-items:baseline; gap:12px; margin-bottom:14px; }
+.sh h2 { margin:0; font-size:26px; letter-spacing:-.01em; }
+.sh .note { color:var(--muted); font-size:14px; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px 22px; }
+
+/* repaso */
+.rq { border-top:1px solid var(--line); padding:14px 0 6px; }
+.rq:first-of-type { border-top:0; padding-top:4px; }
+.rq .from { font:12px 'JetBrains Mono', monospace; color:var(--muted); margin-bottom:4px; }
+.rq .p { font-weight:500; margin-bottom:10px; }
+.rq .opts { display:grid; gap:6px; }
+.rq .opts button { text-align:left; background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:14.5px; }
+.rq .opts button:hover { border-color:var(--acc); }
+.rq .opts button.ok { border-color:var(--acc2); background:color-mix(in srgb, var(--acc2) 14%, var(--bg2)); }
+.rq .opts button.no { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 12%, var(--bg2)); }
+.rq .num { display:flex; gap:8px; } .rq .num input { flex:1; background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:8px 12px; color:var(--ink); font:inherit; }
+.rq .num button { background:var(--acc); color:var(--acc-ink); border:0; border-radius:10px; padding:8px 14px; font-weight:600; }
+.rq .fb { font-size:14px; color:var(--muted); margin-top:8px; }
+.empty { color:var(--muted); font-size:15px; }
+
+/* proyecto */
+.track { display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; margin:6px 0 16px; }
+.hito { position:relative; height:42px; border-radius:10px; background:var(--bg2); border:1px solid var(--line); display:grid; place-items:center;
+        font:600 13px 'JetBrains Mono', monospace; color:var(--muted); }
+.hito.open { border-color:var(--acc); color:var(--ink); }
+.hito.done { background:var(--acc); color:var(--acc-ink); border-color:var(--acc); }
+.hcur .k { font:600 12px 'JetBrains Mono', monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--acc2); }
+.hcur h3 { margin:4px 0 6px; font-size:20px; }
+.hcur p { margin:0 0 10px; color:var(--muted); font-size:14.5px; }
+.cmd { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; }
+.cmd code { padding:6px 10px; font-size:13px; }
+.cmd button, .chk { background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:6px 12px; font-size:13.5px; }
+.chk.on { border-color:var(--acc2); color:var(--acc2); }
+
+/* partes */
+.parts { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:16px; }
+.part { background:var(--card); border:1px solid var(--line); border-radius:18px; display:flex; flex-direction:column; overflow:hidden; }
+.part .h { display:flex; gap:14px; padding:18px 20px 12px; }
+.ring { flex:none; width:54px; height:54px; }
+.ring circle { fill:none; stroke-width:5; }
+.ring text { font:600 13px 'JetBrains Mono', monospace; text-anchor:middle; dominant-baseline:central; fill:var(--ink); }
+.part .no { font:12px 'JetBrains Mono', monospace; color:var(--muted); }
+.part h3 { margin:2px 0 4px; font-size:19px; line-height:1.2; }
+.part .d { font-size:14px; color:var(--muted); margin:0; }
+details { border-top:1px solid var(--line); margin-top:auto; }
+summary { list-style:none; cursor:pointer; padding:12px 20px; font-size:14px; color:var(--acc); display:flex; justify-content:space-between; }
+summary::-webkit-details-marker { display:none; }
+summary::after { content:"＋"; } details[open] summary::after { content:"－"; }
+details a { display:flex; gap:12px; padding:9px 20px; border-top:1px solid var(--line); font-size:14px; align-items:baseline; }
+details a:hover { background:var(--bg2); }
+details a .s { font:12px 'JetBrains Mono', monospace; color:var(--muted); width:48px; flex:none; white-space:nowrap; }
+details a .m { margin-left:auto; font:12px 'JetBrains Mono', monospace; color:var(--muted); white-space:nowrap; }
+details a .tag { font-size:11px; border:1px solid var(--acc2); color:var(--acc2); border-radius:999px; padding:0 6px; margin-left:6px; }
+details a.done .s { color:var(--acc); } details a.done .s::before { content:"✓ "; }
+
+footer { margin:48px 0 36px; color:var(--muted); font-size:13px; display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; }
+footer a { color:var(--acc); }
+.pal { display:flex; gap:6px; align-items:center; }
+.pal button { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:4px 10px; font-size:12.5px; }
+.pal button.on { border-color:var(--acc); color:var(--acc); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns:1fr; } svg.bloch { max-width:260px; order:-1; }
+  .two { grid-template-columns:1fr; }
+  .track { grid-template-columns:repeat(5, 1fr); }
+}
+@media (max-width: 600px) {
+  .wrap { padding:0 16px; } .parts { grid-template-columns:1fr; }
+  .bar .pill:not(#prog) { display:none; } .brand { white-space:nowrap; }
+  .sh { flex-direction:column; gap:2px; }
+  .stats { gap:18px; } .stats div:last-child { display:none; }
+}
+</style>
 </head>
 <body>
-<header class="bar"><a class="brand" href="index.html">Qiskit <span>·</span> Guías</a><div style="flex:1"></div><button class="tool theme-btn"></button></header>
-<main class="course">
-  <h1>Qiskit e IBM Quantum, de principio a fin</h1>
-  <p class="lead">Lecciones animadas y narradas, en español, que recorren todas las guías de la documentación de IBM Quantum:
-    circuitos, transpilación, primitivas, ruido, ejecución en hardware real, Serverless, Functions y administración.
-    Todo el código se ejecutó con Qiskit 2.5 antes de publicarse. Al final de cada lección hay ejercicios y enlaces a las guías originales.</p>
-  <div id="parts"></div>
-  <p class="extra">Contenido basado en las <a href="https://quantum.cloud.ibm.com/docs/en/guides">guías de IBM Quantum</a> (CC BY-SA 4.0).
-    Atajos en las lecciones: espacio (pausa), ← → (pasos), C (subtítulos), a–d (opciones).</p>
-</main>
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><span class="dot"></span>Qubit a qubit</div>
+    <span class="pill">Qiskit · en español</span>
+    <span class="sp"></span>
+    <span class="pill" id="prog"></span>
+    <button class="theme-btn" aria-label="Cambiar tema"></button>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Aprende Qiskit<br><span>haciendo</span>, qubit a qubit.</h1>
+      <p class="lead">Lecciones animadas y narradas que recorren todas las guías de IBM Quantum. En cada una predices, practicas en tu cuaderno y reflexionas; a lo largo del curso construyes un experimento real.</p>
+      <div class="next" id="next"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <svg class="bloch" viewBox="-170 -170 340 340" id="bloch" aria-hidden="true"></svg>
+  </section>
+
+  <div class="two">
+    <section class="blk">
+      <div class="sh"><h2>Repaso de hoy</h2><span class="note" id="rnote"></span></div>
+      <div class="panel" id="repaso"></div>
+    </section>
+    <section class="blk">
+      <div class="sh"><h2>Proyecto Ising</h2><span class="note">una cadena de espines, de la pizarra al QPU</span></div>
+      <div class="panel">
+        <div class="track" id="track"></div>
+        <div class="hcur" id="hito"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="blk">
+    <div class="sh"><h2>El curso</h2><span class="note">10 partes · basado en las guías oficiales de IBM Quantum</span></div>
+    <div class="parts" id="parts"></div>
+  </section>
+
+  <footer>
+    <span>Contenido basado en las <a href="https://quantum.cloud.ibm.com/docs/en/guides">guías de IBM Quantum</a> (CC BY-SA 4.0). Todo el código se ejecutó con Qiskit 2.5.</span>
+    <span class="pal">Paleta: <button data-p="fosforo">Fósforo</button><button data-p="cobre">Cobre</button><button data-p="medianoche">Medianoche</button></span>
+  </footer>
+</div>
+
 <script>
-(async () => {
-  let done = new Set();
-  try { done = new Set(JSON.parse(localStorage.getItem('qiskit:done') || '[]')); } catch (e) {}
-  const course = await (await fetch('course.json')).json();
-  const root = document.getElementById('parts');
-  for (const part of course.parts) {
-    const sec = document.createElement('section'); sec.className = 'part';
-    const h = document.createElement('h2'); h.textContent = part.title; sec.appendChild(h);
-    const d = document.createElement('p'); d.className = 'desc'; d.textContent = part.desc; sec.appendChild(d);
-    const list = document.createElement('div'); list.className = 'lessons';
-    for (const l of part.lessons) {
-      const a = document.createElement(l.pending ? 'div' : 'a');
-      a.className = 'lesson-link' + (done.has(l.id) ? ' done' : '') + (l.pending ? ' pending' : '');
-      if (!l.pending) a.href = 'lesson.html?l=' + encodeURIComponent(l.id);
-      const s = document.createElement('div'); s.className = 'sec'; s.textContent = l.section;
-      const mid = document.createElement('div');
-      const t = document.createElement('div'); t.className = 't'; t.textContent = l.title;
-      const sm = document.createElement('div'); sm.className = 's'; sm.textContent = l.summary;
-      mid.append(t, sm);
-      const m = document.createElement('div'); m.className = 'm'; m.textContent = l.pending ? 'en preparación' : (l.minutes ? `≈ ${l.minutes} min` : '');
-      a.append(s, mid, m);
-      list.appendChild(a);
-    }
-    sec.appendChild(list);
-    root.appendChild(sec);
+const $ = s => document.querySelector(s);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// texto con `código`, **negrita** y $matemáticas$
+function rich(s) {
+  const math = [];
+  s = s.replace(/\$([^$]+)\$/g, (_, m) => { math.push(m); return `\u0000${math.length - 1}\u0000`; });
+  s = esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, k) => { try { return katex.renderToString(math[+k], { throwOnError: false }); } catch (e) { return esc(math[+k]); } });
+}
+
+// ---------- paleta (prototipo: elegir una y quitar el selector) ----------
+document.querySelectorAll('.pal button').forEach(b => {
+  b.classList.toggle('on', b.dataset.p === document.documentElement.dataset.paleta);
+  b.onclick = () => { document.documentElement.dataset.paleta = b.dataset.p; try { localStorage.setItem('qiskit:paleta', b.dataset.p); } catch (e) {}
+    document.querySelectorAll('.pal button').forEach(x => x.classList.toggle('on', x === b)); };
+});
+
+// ---------- esfera de Bloch: el estado precesa alrededor de Z ----------
+(() => {
+  const s = $('#bloch'), ns = 'http://www.w3.org/2000/svg', R = 120, tilt = 0.24;
+  const E = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); s.appendChild(e); return e; };
+  s.innerHTML = '<defs><radialGradient id="gl" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="var(--acc)" stop-opacity=".16"/><stop offset="100%" stop-color="var(--acc)" stop-opacity="0"/></radialGradient></defs>';
+  E('circle', { class: 'sph', r: R });
+  E('ellipse', { class: 'eq', rx: R, ry: R * tilt });
+  E('line', { class: 'ax', x1: 0, y1: -R - 20, x2: 0, y2: R + 20 });
+  E('line', { class: 'ax', x1: -R - 20, y1: 0, x2: R + 20, y2: 0 });
+  E('text', { x: -10, y: -R - 28 }).textContent = '|0⟩';
+  E('text', { x: -10, y: R + 42 }).textContent = '|1⟩';
+  const trail = E('path', { class: 'trail' });
+  const vec = E('line', { class: 'vec', x1: 0, y1: 0 });
+  const tip = E('circle', { class: 'tip', r: 7 });
+  const proj = (th, ph) => [R * Math.sin(th) * Math.cos(ph), -R * Math.cos(th) + R * tilt * Math.sin(th) * Math.sin(ph)];
+  const th = 0.85;
+  const pts = []; for (let k = 0; k <= 64; k++) pts.push(proj(th, k / 64 * 2 * Math.PI));
+  trail.setAttribute('d', 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join('L'));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const frame = t => {
+    const [x, y] = proj(th, t / 1600);
+    vec.setAttribute('x2', x); vec.setAttribute('y2', y); tip.setAttribute('cx', x); tip.setAttribute('cy', y);
+    if (!reduce) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+})();
+
+// ---------- proyecto Ising ----------
+const HITOS = [
+  { n: 1, part: 1, t: 'Dos espines y un paso de tiempo', d: 'Crea tu cuenta de IBM Quantum, escribe el Hamiltoniano y construye un paso de Trotter.', nb: 'practica/proyecto/hito1.py' },
+  { n: 2, part: 2, t: 'Muchos pasos y la magnetización', d: 'Encadena pasos de Trotter con parámetros y define los observables de magnetización.' },
+  { n: 3, part: 3, t: 'Transpilar para un procesador', d: 'Lleva el circuito a FakeFez y mide cómo crece la profundidad con el tiempo.' },
+  { n: 4, part: 4, t: 'Exacto frente a ruidoso', d: 'Magnetización en el tiempo: simulación exacta y con el modelo de ruido de Aer.' },
+  { n: 5, part: 5, t: 'Primera ejecución real', d: 'Tu cadena en un QPU de IBM, con un presupuesto de un minuto.' },
+  { n: 6, part: 6, t: 'Mitigar el ruido', d: 'Sin mitigación, TREX y ZNE: ¿cuánto te acercas al valor exacto?' },
+  { n: 7, part: 7, t: 'Puertas fraccionales', d: 'RZZ nativas y modo batch; segunda ejecución real.' },
+  { n: 8, part: 8, t: 'Menos profundidad', d: 'Recorta el circuito con un addon (OBP o AQC-Tensor).' },
+  { n: 9, part: 9, t: 'Código moderno', d: 'Migra a las primitivas del lado del cliente y empaqueta el experimento.' },
+  { n: 10, part: 10, t: 'Informe final', d: 'Gráficas, conclusiones y citas, listo para compartir.' },
+];
+function renderProyecto(course) {
+  const done = LS.get('qiskit:hitos', []);
+  const cur = HITOS.find(h => !done.includes(h.n)) || HITOS[HITOS.length - 1];
+  const track = $('#track'); track.textContent = '';
+  HITOS.forEach(h => {
+    const d = document.createElement('div');
+    d.className = 'hito' + (done.includes(h.n) ? ' done' : h.nb ? ' open' : '');
+    d.textContent = h.n; d.title = `Hito ${h.n} · ${h.t}`;
+    track.appendChild(d);
+  });
+  const partTitle = course.parts[cur.part - 1].title.split(' · ')[1];
+  const box = $('#hito');
+  box.innerHTML = `<div class="k">Hito ${cur.n} de 10 · Parte ${cur.part}</div><h3></h3><p></p>`;
+  box.querySelector('h3').textContent = cur.t; box.querySelector('p').textContent = cur.d;
+  if (cur.nb) {
+    const cmd = `uv run marimo edit ${cur.nb}`;
+    const row = document.createElement('div'); row.className = 'cmd';
+    row.innerHTML = `<code></code><button>Copiar</button><button class="chk">Marcar como hecho</button>`;
+    row.querySelector('code').textContent = cmd;
+    row.children[1].onclick = e => navigator.clipboard?.writeText(cmd).then(() => { e.target.textContent = 'Copiado ✓'; });
+    row.children[2].onclick = () => { LS.set('qiskit:hitos', [...new Set([...done, cur.n])]); renderProyecto(course); };
+    box.appendChild(row);
+  } else {
+    const p = document.createElement('p'); p.textContent = `Se abre cuando llegues a la Parte ${cur.part} (${partTitle}).`; box.appendChild(p);
   }
+}
+
+// ---------- repaso espaciado (1, 3, 7 y 21 días; lo que fallas vuelve mañana) ----------
+const DAY = 864e5, GAPS = [1, 3, 7, 21];
+async function renderRepaso(course, doneSet) {
+  const box = $('#repaso');
+  const lessons = course.parts.flatMap(p => p.lessons).filter(l => doneSet.has(l.id));
+  if (!lessons.length) { box.innerHTML = '<p class="empty">Cuando completes tu primera lección, aquí aparecerán preguntas para repasar en el momento justo, antes de que se olviden.</p>'; $('#rnote').textContent = ''; return; }
+  const state = LS.get('qiskit:repaso', {}), now = Date.now(), items = [];
+  for (const l of lessons) {
+    let L; try { L = await (await fetch(`lessons/${l.id}/lesson.json`)).json(); } catch (e) { continue; }
+    for (const b of L.beats) {
+      if (!b.ask || !['choice', 'numeric'].includes(b.ask.kind)) continue;
+      const id = `${l.id}:${b.id}`, st = state[id];
+      if (!st || st.due <= now) items.push({ id, l, a: b.ask, st, due: st ? st.due : 0 });
+    }
+  }
+  items.sort((x, y) => x.due - y.due || Math.random() - .5);
+  const todo = items.slice(0, 3);
+  $('#rnote').textContent = todo.length ? `${todo.length} de ${items.length} pendientes` : '';
+  box.textContent = '';
+  if (!todo.length) { box.innerHTML = '<p class="empty">Nada que repasar hoy. ✓ Vuelve mañana.</p>'; return; }
+  const answer = (it, ok, el) => {
+    const s = LS.get('qiskit:repaso', {}), prev = s[it.id] || { box: -1 };
+    const nb = ok ? Math.min(prev.box + 1, GAPS.length - 1) : 0;
+    s[it.id] = { box: nb, due: Date.now() + (ok ? GAPS[nb] : 1) * DAY };
+    LS.set('qiskit:repaso', s);
+    const fb = el.querySelector('.fb');
+    fb.innerHTML = (ok ? '✓ ' : '✗ ') + rich(ok ? (it.a.why || 'Correcto.') : (it.a.hint || 'No es correcto: volverá mañana.')) + `<br><span class="mono">próximo repaso en ${ok ? GAPS[nb] : 1} día(s)</span>`;
+  };
+  for (const it of todo) {
+    const el = document.createElement('div'); el.className = 'rq';
+    el.innerHTML = `<div class="from">${esc(it.l.section)} · ${esc(it.l.title)}</div><div class="p">${rich(it.a.prompt)}</div>`;
+    if (it.a.kind === 'choice') {
+      const o = document.createElement('div'); o.className = 'opts';
+      it.a.options.forEach((t, k) => {
+        const b = document.createElement('button'); b.innerHTML = rich(t);
+        b.onclick = () => { if (el.dataset.done) return; el.dataset.done = 1; const ok = k === it.a.right; b.classList.add(ok ? 'ok' : 'no');
+          if (!ok) o.children[it.a.right].classList.add('ok'); answer(it, ok, el); };
+        o.appendChild(b);
+      });
+      el.appendChild(o);
+    } else {
+      const r = document.createElement('div'); r.className = 'num';
+      r.innerHTML = '<input inputmode="decimal" placeholder="Tu respuesta"><button>Comprobar</button>';
+      const inp = r.querySelector('input');
+      const go = () => { if (el.dataset.done) return; const v = Number(inp.value.replace(',', '.')); if (!isFinite(v) || inp.value.trim() === '') return;
+        el.dataset.done = 1; const tol = it.a.tol ?? 0.01; answer(it, Math.abs(v - it.a.answer) <= tol * Math.max(1, Math.abs(it.a.answer)), el); };
+      r.querySelector('button').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+      el.appendChild(r);
+    }
+    el.appendChild(Object.assign(document.createElement('div'), { className: 'fb' }));
+    box.appendChild(el);
+  }
+}
+
+// ---------- curso ----------
+(async () => {
+  const doneSet = new Set(LS.get('qiskit:done', []));
+  const course = await (await fetch('course.json')).json();
+  const all = course.parts.flatMap(p => p.lessons);
+  const mins = all.reduce((a, l) => a + (l.minutes || 0), 0);
+  $('#prog').textContent = `${doneSet.size}/${all.length} lecciones`;
+  $('#stats').innerHTML = `<div><b>${all.length}</b>lecciones</div><div><b>${(mins / 60).toFixed(1)} h</b>narradas</div><div><b>10</b>hitos de proyecto</div><div><b>${doneSet.size}</b>completadas</div>`;
+
+  // siguiente paso: misión pendiente de una lección hecha, o la siguiente lección
+  const misDone = LS.get('qiskit:misiones', []);
+  const pendMis = all.filter(l => doneSet.has(l.id)).flatMap(l => (l.missions || []).filter(m => !m.notebook.includes('proyecto/') && !misDone.includes(m.notebook)).map(m => ({ l, m })))[0];
+  const nextL = all.find(l => !doneSet.has(l.id)) || all[0];
+  const nx = $('#next');
+  if (pendMis) {
+    const cmd = `uv run marimo edit ${pendMis.m.notebook}`;
+    nx.innerHTML = `<div class="k">Tu turno · misión pendiente</div><div class="t"></div><div class="s">${pendMis.m.tasks} misiones en el cuaderno de práctica. Busca las ✅.</div>
+      <div class="cmd"><code></code><button>Copiar</button><button class="chk">Ya la hice</button></div>`;
+    nx.querySelector('.t').textContent = `${pendMis.l.section} · ${pendMis.l.title}`;
+    nx.querySelector('code').textContent = cmd;
+    const [cp, ok] = nx.querySelectorAll('.cmd button');
+    cp.onclick = () => navigator.clipboard?.writeText(cmd).then(() => { cp.textContent = 'Copiado ✓'; });
+    ok.onclick = () => { LS.set('qiskit:misiones', [...misDone, pendMis.m.notebook]); location.reload(); };
+  } else {
+    nx.innerHTML = `<div class="k">${doneSet.size ? 'Continúa' : 'Empieza aquí'} · ${esc(nextL.section)}</div><div class="t"></div><div class="s"></div><a class="go" href="lesson.html?l=${encodeURIComponent(nextL.id)}">${doneSet.size ? 'Continuar' : 'Empezar'} · ${nextL.minutes} min →</a>`;
+    nx.querySelector('.t').textContent = nextL.title; nx.querySelector('.s').textContent = nextL.summary;
+  }
+
+  renderProyecto(course);
+  renderRepaso(course, doneSet);
+
+  const COLORS = ['--acc', '--acc2', '--acc3'];
+  const root = $('#parts');
+  course.parts.forEach((part, i) => {
+    const [num, name] = part.title.split(' · ');
+    const pd = part.lessons.filter(l => doneSet.has(l.id)).length, n = part.lessons.length;
+    const C = 2 * Math.PI * 22, col = `var(${COLORS[i % 3]})`;
+    const card = document.createElement('article'); card.className = 'part';
+    card.innerHTML = `<div class="h"><svg class="ring" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" stroke="var(--line)"/>
+      <circle cx="27" cy="27" r="22" stroke="${col}" stroke-linecap="${pd ? 'round' : 'butt'}" stroke-dasharray="${C * pd / n} ${C}" transform="rotate(-90 27 27)"/><text x="27" y="27">${pd}/${n}</text></svg>
+      <div><div class="no"></div><h3></h3><p class="d"></p></div></div>
+      <details><summary>${n} lecciones · ${part.lessons.reduce((a, l) => a + (l.minutes || 0), 0)} min</summary></details>`;
+    card.querySelector('.no').textContent = num; card.querySelector('h3').textContent = name || num; card.querySelector('.d').textContent = part.desc;
+    const det = card.querySelector('details');
+    if (part.lessons.some(l => !doneSet.has(l.id)) && part.lessons.some(l => doneSet.has(l.id))) det.open = true;
+    for (const l of part.lessons) {
+      const a = document.createElement('a'); a.href = 'lesson.html?l=' + encodeURIComponent(l.id); a.title = l.summary;
+      if (doneSet.has(l.id)) a.className = 'done';
+      a.innerHTML = `<span class="s">${esc(l.section)}</span><span class="t"></span><span class="m">${l.minutes} min</span>`;
+      a.querySelector('.t').textContent = l.title;
+      if (l.missions) a.querySelector('.t').insertAdjacentHTML('beforeend', '<span class="tag">práctica</span>');
+      det.appendChild(a);
+    }
+    root.appendChild(card);
+  });
 })();
 </script>
 </body>
